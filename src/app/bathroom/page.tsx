@@ -5,7 +5,8 @@ import { supabase } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
 import RoomNavigation from "@/components/game/RoomNavigation";
 import PetCharacter from "@/components/game/PetCharacter"; 
-import { Store, Droplets, ChevronLeft, ChevronRight, X } from "lucide-react"; 
+import Image from "next/image";
+import { Droplets, ChevronLeft, ChevronRight, X } from "lucide-react"; 
 import { Fredoka } from "next/font/google";
 
 const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
@@ -212,11 +213,22 @@ export default function BathRoom() {
     );
   };
 
-  if (isAuthLoading || !petData) return <div className="min-h-screen bg-cyan-50"></div>;
+  if (isAuthLoading || !petData) return <div className="min-h-screen bg-white"></div>;
 
   return (
-    <main className="flex min-h-screen flex-col bg-cyan-50 text-gray-900 pb-32 relative overflow-hidden">
+    <main className="flex min-h-screen flex-col bg-white text-gray-900 pb-32 relative overflow-hidden">
       
+      {/* BACKGROUND IMAGE */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/bg/WhatsApp%20Image%202026-05-11%20at%2016.55.17.jpeg"
+          alt=""
+          fill
+          className="object-cover"
+          priority
+        />
+      </div>
+
       {/* CSS KEYFRAMES DI-UPGRADE BIAR LEBIH PREMIUM */}
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes wobble { 

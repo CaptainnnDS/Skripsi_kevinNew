@@ -26,7 +26,7 @@ export default function PetCharacter({ petData, petMood = "happy", isSleeping = 
       const mouseRelX_svg = ((e.clientX - (containerRect.left + containerW / 2)) / containerW) * 100;
       const mouseRelY_svg = ((e.clientY - (containerRect.top + containerRect.height / 2)) / containerRect.height) * 100;
 
-      const movePupil = (pupilGroupRef: React.RefObject<SVGGElement>, offsetFromCenterSVG_X: number, eyeSocketRadius_svg: number, pupilGroupRadius_svg: number) => {
+      const movePupil = (pupilGroupRef: React.RefObject<SVGGElement | null>, offsetFromCenterSVG_X: number, eyeSocketRadius_svg: number, pupilGroupRadius_svg: number) => {
         if (!pupilGroupRef.current) return;
         const dx = mouseRelX_svg - offsetFromCenterSVG_X;
         const dy = mouseRelY_svg + 15; 
