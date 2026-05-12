@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import RoomNavigation from "@/components/game/RoomNavigation";
-import { BookOpen, Clock, Star, ChevronRight, Lock, CheckCircle2 } from "lucide-react";
+import { BookOpen, ChevronRight, Lock, CheckCircle2 } from "lucide-react";
 import { Fredoka } from "next/font/google";
 
 const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
@@ -14,10 +14,6 @@ interface Materi {
   id: number;
   title: string;
   description: string;
-  icon: string;
-  total_lessons: number;
-  duration: string;
-  difficulty: "Mudah" | "Sedang" | "Sulit";
   is_locked: boolean;
   order: number;
   pdf_url: string;
@@ -102,15 +98,6 @@ export default function Learn() {
     loadData();
   }, [router]);
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "Mudah": return "bg-green-100 text-green-700";
-      case "Sedang": return "bg-yellow-100 text-yellow-700";
-      case "Sulit": return "bg-red-100 text-red-700";
-      default: return "bg-gray-100 text-gray-700";
-    }
-  };
-
   if (isAuthLoading || !petData) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-blue-50 text-blue-900">
@@ -169,9 +156,9 @@ export default function Learn() {
               )}
 
               <div className="flex items-start gap-3">
-                {/* Icon */}
-                <div className="text-3xl flex-shrink-0 bg-blue-50 w-12 h-12 rounded-xl flex items-center justify-center">
-                  {materi.icon}
+                {/* Numbered badge */}
+                <div className="flex-shrink-0 bg-blue-600 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm">
+                  <span className="text-white font-bold text-sm">{materi.order}</span>
                 </div>
 
                 {/* Content */}
@@ -191,25 +178,11 @@ export default function Learn() {
                     {materi.description}
                   </p>
 
-                  {/* Meta info */}
-                  <div className="flex items-center gap-2 mt-2 flex-wrap">
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${getDifficultyColor(materi.difficulty)}`}>
-                      {materi.difficulty}
+                  {progressMap[materi.id] && (
+                    <span className="inline-block mt-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                      ✅ Selesai
                     </span>
-                    <span className="text-[10px] text-gray-400 flex items-center gap-0.5">
-                      <Clock className="w-3 h-3" />
-                      {materi.duration}
-                    </span>
-                    <span className="text-[10px] text-gray-400 flex items-center gap-0.5">
-                      <Star className="w-3 h-3" />
-                      {materi.total_lessons} lesson
-                    </span>
-                    {progressMap[materi.id] && (
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">
-                        ✅ Selesai
-                      </span>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
             </button>

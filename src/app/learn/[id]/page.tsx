@@ -16,10 +16,6 @@ interface Materi {
   id: number;
   title: string;
   description: string;
-  icon: string;
-  difficulty: string;
-  duration: string;
-  total_lessons: number;
   pdf_url: string;
   is_locked: boolean;
 }
@@ -156,7 +152,9 @@ export default function LearnDetail() {
           </button>
 
           <div className="flex items-center gap-3 mb-1">
-            <span className="text-3xl">{materi!.icon}</span>
+            <div className="flex-shrink-0 bg-blue-600 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm">
+              <span className="text-white font-bold text-sm">📖</span>
+            </div>
             <div>
               <h1 className={`text-xl font-bold text-blue-900 ${funFont.className}`}>
                 {materi!.title}

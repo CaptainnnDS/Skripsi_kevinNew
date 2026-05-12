@@ -15,7 +15,6 @@ const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 interface Materi {
   id: number;
   title: string;
-  icon: string;
 }
 
 export default function QuizPage() {
@@ -59,7 +58,7 @@ export default function QuizPage() {
       // Fetch materi info
       const { data: materiData, error: materiError } = await supabase
         .from("materi")
-        .select("id, title, icon")
+        .select("id, title")
         .eq("id", materiId)
         .single();
 
@@ -176,7 +175,9 @@ export default function QuizPage() {
             Kembali ke Materi
           </button>
           <div className="flex items-center gap-2">
-            <span className="text-2xl">{materi!.icon}</span>
+            <div className="flex-shrink-0 bg-blue-600 w-8 h-8 rounded-lg flex items-center justify-center shadow-sm">
+              <span className="text-white font-bold text-xs">🧠</span>
+            </div>
             <h1 className={`text-lg font-bold text-blue-900 ${funFont.className}`}>
               Quiz: {materi!.title}
             </h1>
