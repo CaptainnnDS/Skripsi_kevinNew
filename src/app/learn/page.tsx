@@ -5,10 +5,28 @@ import { supabase } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import RoomNavigation from "@/components/game/RoomNavigation";
+import { BookOpen, Clock, Star, ChevronRight, Lock } from "lucide-react";
+import { Fredoka } from "next/font/google";
+
+const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
+
+interface Materi {
+  id: number;
+  title: string;
+  description: string;
+  icon: string;
+  total_lessons: number;
+  duration: string;
+  difficulty: "Mudah" | "Sedang" | "Sulit";
+  is_locked: boolean;
+  order: number;
+  pdf_url: string;
+}
 
 export default function Learn() {
   const router = useRouter();
   const [petData, setPetData] = useState<any>(null);
+  const [materiList, setMateriList] = useState<Materi[]>([]);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   useEffect(() => {
@@ -19,15 +37,15 @@ export default function Learn() {
         return;
       }
 
-      // Narik data pake limit(1) biar kebal badai error
-      const { data: pets, error } = await supabase
+      // Fetch pet data
+      const { data: pets, error: petError } = await supabase
         .from("pets")
         .select("*")
         .eq("user_id", session.user.id)
         .limit(1);
 
-      if (error) {
-        console.log("Catatan: Ada masalah narik data", error.message);
+      if (petError) {
+        console.log("Catatan: Ada masalah narik data pet", petError.message);
       }
 
       if (pets && pets.length > 0) {
@@ -37,10 +55,33 @@ export default function Learn() {
         return;
       }
 
+      // Fetch materi list
+      const { data: materiData, error: materiError } = await supabase
+        .from("materi")
+        .select("*")
+        .order("order", { ascending: true });
+
+      if (materiError) {
+        console.log("Catatan: Ada masalah narik data materi", materiError.message);
+      }
+
+      if (materiData) {
+        setMateriList(materiData);
+      }
+
       setIsAuthLoading(false);
     };
     loadData();
   }, [router]);
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case "Mudah": return "bg-green-100 text-green-700";
+      case "Sedang": return "bg-yellow-100 text-yellow-700";
+      case "Sulit": return "bg-red-100 text-red-700";
+      default: return "bg-gray-100 text-gray-700";
+    }
+  };
 
   if (isAuthLoading || !petData) {
     return (
@@ -55,18 +96,87 @@ export default function Learn() {
     <main className="flex min-h-screen flex-col bg-blue-50 text-gray-900 pb-24 relative overflow-hidden">
       <TopBar pet={petData} />
       <RoomNavigation />
-      
-      <div className="flex-1 flex flex-col items-center justify-center p-6 relative z-10">
-        <div className="bg-white p-8 rounded-3xl shadow-lg text-center border-4 border-blue-200 w-full max-w-md">
-          
-          <span className="text-6xl mb-4 block animate-bounce">📚</span>
-          <h1 className="text-3xl font-extrabold text-blue-900 mb-2">
-            Learn
-          </h1>
-          <p className="text-gray-500">
-            Waktunya belajar materi ITS biar Gibbey makin pinter!
+
+      <div className="flex-1 flex flex-col px-16 py-4 relative z-10">
+        {/* Header */}
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-1">
+            <BookOpen className="w-6 h-6 text-blue-600" />
+            <h1 className={`text-2xl font-bold text-blue-900 ${funFont.className}`}>
+              Materi Belajar
+            </h1>
+          </div>
+          <p className="text-sm text-gray-500">
+            Pilih materi buat bikin Gibbey makin pinter! 🧠
           </p>
-          
+        </div>
+
+        {/* Materi Cards */}
+        <div className="flex flex-col gap-3">
+          {materiList.length === 0 && (
+            <div className="bg-white rounded-2xl shadow-md border-2 border-blue-100 p-8 text-center">
+              <span className="text-4xl block mb-2">📭</span>
+              <p className="text-gray-500 text-sm">Belum ada materi tersedia.</p>
+            </div>
+          )}
+
+          {materiList.map((materi) => (
+            <button
+              key={materi.id}
+              disabled={materi.is_locked}
+              onClick={() => !materi.is_locked && router.push(`/learn/${materi.id}`)}
+              className={`relative w-full text-left bg-white rounded-2xl shadow-md border-2 p-4 transition-all duration-200 
+                ${materi.is_locked
+                  ? "border-gray-200 opacity-60 cursor-not-allowed"
+                  : "border-blue-100 hover:border-blue-300 hover:shadow-lg active:scale-[0.98]"
+                }`}
+            >
+              {/* Lock overlay */}
+              {materi.is_locked && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/50 rounded-2xl z-10">
+                  <div className="bg-gray-100 p-2 rounded-full">
+                    <Lock className="w-5 h-5 text-gray-400" />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-start gap-3">
+                {/* Icon */}
+                <div className="text-3xl flex-shrink-0 bg-blue-50 w-12 h-12 rounded-xl flex items-center justify-center">
+                  {materi.icon}
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className={`font-bold text-gray-900 text-sm truncate ${funFont.className}`}>
+                      {materi.title}
+                    </h3>
+                    <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  </div>
+
+                  <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">
+                    {materi.description}
+                  </p>
+
+                  {/* Meta info */}
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${getDifficultyColor(materi.difficulty)}`}>
+                      {materi.difficulty}
+                    </span>
+                    <span className="text-[10px] text-gray-400 flex items-center gap-0.5">
+                      <Clock className="w-3 h-3" />
+                      {materi.duration}
+                    </span>
+                    <span className="text-[10px] text-gray-400 flex items-center gap-0.5">
+                      <Star className="w-3 h-3" />
+                      {materi.total_lessons} lesson
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </button>
+          ))}
         </div>
       </div>
 
