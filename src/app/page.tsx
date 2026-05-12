@@ -34,7 +34,7 @@ export default function Home() {
         setPetData(pets[0]);
         setIsAuthLoading(false);
       } else {
-        router.push("/setup");
+        router.push("/");
         return;
       }
     };
