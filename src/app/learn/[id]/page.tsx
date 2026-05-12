@@ -6,7 +6,7 @@ import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import RoomNavigation from "@/components/game/RoomNavigation";
 import PdfViewer from "@/components/learn/PdfViewer";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Target } from "lucide-react";
 import { Fredoka } from "next/font/google";
 
 const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
@@ -32,6 +32,7 @@ export default function LearnDetail() {
   const [materi, setMateri] = useState<Materi | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [quizPassed, setQuizPassed] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -81,6 +82,18 @@ export default function LearnDetail() {
 
       setMateri(materiData);
       setIsLoading(false);
+
+      // Cek progress quiz
+      const { data: progress } = await supabase
+        .from("user_materi_progress")
+        .select("quiz_passed")
+        .eq("user_id", session.user.id)
+        .eq("materi_id", materiId)
+        .single();
+
+      if (progress?.quiz_passed) {
+        setQuizPassed(true);
+      }
     };
 
     loadData();
@@ -151,6 +164,21 @@ export default function LearnDetail() {
 
         {/* PDF Viewer */}
         <PdfViewer pdfUrl={materi!.pdf_url} title={materi!.title} />
+
+        {/* Tombol Ikut Quiz */}
+        <div className="mt-4">
+          <button
+            onClick={() => router.push(`/quiz/${materi!.id}`)}
+            className={`w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-sm transition-all shadow-md
+              ${quizPassed
+                ? "bg-green-600 hover:bg-green-700 text-white"
+                : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+              }`}
+          >
+            <Target className="w-5 h-5" />
+            {quizPassed ? "✅ Quiz Selesai — Coba Lagi?" : "Ikut Quiz 🎯"}
+          </button>
+        </div>
       </div>
 
       <NavigationBar />

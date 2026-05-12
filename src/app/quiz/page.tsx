@@ -5,13 +5,16 @@ import { supabase } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import RoomNavigation from "@/components/game/RoomNavigation";
+import { BookOpen } from "lucide-react";
+import { Fredoka } from "next/font/google";
+
+const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 
 export default function Quiz() {
   const router = useRouter();
   const [petData, setPetData] = useState<any>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
-  // Wajib ambil data pet lengkap buat dikirim ke TopBar
   useEffect(() => {
     const loadData = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -20,29 +23,26 @@ export default function Quiz() {
         return;
       }
 
-      // INI YANG DIGANTI: Pake maybeSingle() dan pecah ke bawah biar jelas
       const { data: existingPet, error } = await supabase
         .from("pets")
         .select("*")
         .eq("user_id", session.user.id)
         .maybeSingle();
-        
+
       if (error) {
-        console.log("Catatan: Ada masalah narik data, tapi aman udah ditangani.", error.message || error);
+        console.log("Catatan: Ada masalah narik data.", error.message);
       }
 
-      // INI LOGIKA PENGAMANNYA
       if (existingPet) {
         setPetData(existingPet);
       } else {
-        // Kalau data Gibbey kosong, lempar balik ke Home biar dibuatin baru
         router.push("/");
-        return; // Setop eksekusi kodingan di bawahnya
+        return;
       }
 
       setIsAuthLoading(false);
     };
-    
+
     loadData();
   }, [router]);
 
@@ -57,26 +57,28 @@ export default function Quiz() {
 
   return (
     <main className="flex min-h-screen flex-col bg-blue-50 text-gray-900 pb-24 relative overflow-hidden">
-      {/* 1. Header & Status Bar */}
       <TopBar pet={petData} />
-      
-      {/* 2. Tombol Kiri Kanan */}
       <RoomNavigation />
-      
-      {/* 3. Konten Tengah Ruangan */}
+
       <div className="flex-1 flex flex-col items-center justify-center p-6 relative z-10">
         <div className="bg-white p-8 rounded-3xl shadow-lg text-center border-4 border-blue-200 w-full max-w-md">
           <span className="text-6xl mb-4 block animate-bounce">🧠</span>
-          <h1 className="text-3xl font-extrabold text-blue-900 mb-2">
-            Quiz, Let's Play!
+          <h1 className={`text-3xl font-extrabold text-blue-900 mb-2 ${funFont.className}`}>
+            Quiz
           </h1>
-          <p className="text-gray-500">
-            Belajar quiz
+          <p className="text-gray-500 mb-6">
+            Pilih materi dulu, lalu kerjakan quiz-nya!
           </p>
+          <button
+            onClick={() => router.push("/learn")}
+            className="inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-md"
+          >
+            <BookOpen className="w-5 h-5" />
+            Ke Halaman Materi
+          </button>
         </div>
       </div>
 
-      {/* 4. Bottom Bar Baru */}
       <NavigationBar />
     </main>
   );

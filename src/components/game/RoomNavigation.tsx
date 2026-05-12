@@ -17,8 +17,15 @@ export default function RoomNavigation() {
   const pathname = usePathname();
   const router = useRouter();
 
+  // Normalize path untuk dynamic routes (e.g. /quiz/3 → /quiz, /learn/5 → /learn)
+  const normalizedPath = pathname.startsWith("/quiz/")
+    ? "/quiz"
+    : pathname.startsWith("/learn/")
+      ? "/learn"
+      : pathname;
+
   // Cari posisi ruangan kita sekarang ada di nomor berapa
-  const currentIndex = rooms.findIndex((r) => r.path === pathname);
+  const currentIndex = rooms.findIndex((r) => r.path === normalizedPath);
   
   // Kalau ternyata halaman gak ada di daftar (misal pas lagi di /login), jangan tampilin panah
   if (currentIndex === -1) return null;

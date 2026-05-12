@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import RoomNavigation from "@/components/game/RoomNavigation";
-import { BookOpen, Clock, Star, ChevronRight, Lock } from "lucide-react";
+import { BookOpen, Clock, Star, ChevronRight, Lock, CheckCircle2 } from "lucide-react";
 import { Fredoka } from "next/font/google";
 
 const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
@@ -27,6 +27,7 @@ export default function Learn() {
   const router = useRouter();
   const [petData, setPetData] = useState<any>(null);
   const [materiList, setMateriList] = useState<Materi[]>([]);
+  const [progressMap, setProgressMap] = useState<Record<number, boolean>>({});
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   useEffect(() => {
@@ -67,6 +68,21 @@ export default function Learn() {
 
       if (materiData) {
         setMateriList(materiData);
+      }
+
+      // Fetch user progress
+      const { data: progressData } = await supabase
+        .from("user_materi_progress")
+        .select("materi_id, quiz_passed")
+        .eq("user_id", session.user.id)
+        .eq("quiz_passed", true);
+
+      if (progressData) {
+        const map: Record<number, boolean> = {};
+        progressData.forEach((p) => {
+          map[p.materi_id] = p.quiz_passed;
+        });
+        setProgressMap(map);
       }
 
       setIsAuthLoading(false);
@@ -152,7 +168,11 @@ export default function Learn() {
                     <h3 className={`font-bold text-gray-900 text-sm truncate ${funFont.className}`}>
                       {materi.title}
                     </h3>
-                    <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    {progressMap[materi.id] ? (
+                      <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    )}
                   </div>
 
                   <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">
@@ -172,6 +192,11 @@ export default function Learn() {
                       <Star className="w-3 h-3" />
                       {materi.total_lessons} lesson
                     </span>
+                    {progressMap[materi.id] && (
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                        ✅ Selesai
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
