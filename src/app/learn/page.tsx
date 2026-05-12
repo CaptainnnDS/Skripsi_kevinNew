@@ -66,10 +66,6 @@ export default function Learn() {
         console.log("Catatan: Ada masalah narik data materi", materiError.message);
       }
 
-      if (materiData) {
-        setMateriList(materiData);
-      }
-
       // Fetch user progress
       const { data: progressData } = await supabase
         .from("user_materi_progress")
@@ -77,12 +73,28 @@ export default function Learn() {
         .eq("user_id", session.user.id)
         .eq("quiz_passed", true);
 
+      const passedMap: Record<number, boolean> = {};
       if (progressData) {
-        const map: Record<number, boolean> = {};
         progressData.forEach((p) => {
-          map[p.materi_id] = p.quiz_passed;
+          passedMap[p.materi_id] = true;
         });
-        setProgressMap(map);
+      }
+      setProgressMap(passedMap);
+
+      // Tentukan lock status per-user:
+      // Modul pertama (order=1) selalu terbuka.
+      // Modul lain terbuka jika modul sebelumnya sudah lulus quiz.
+      if (materiData) {
+        const sorted = materiData.sort((a, b) => a.order - b.order);
+        const withAccess = sorted.map((m, idx) => {
+          if (idx === 0) {
+            return { ...m, is_locked: false };
+          }
+          const prevMateri = sorted[idx - 1];
+          const prevPassed = passedMap[prevMateri.id] ?? false;
+          return { ...m, is_locked: !prevPassed };
+        });
+        setMateriList(withAccess);
       }
 
       setIsAuthLoading(false);

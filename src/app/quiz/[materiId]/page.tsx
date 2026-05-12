@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { submitQuiz, type Question, type QuizResultData } from "@/lib/quiz";
+import { submitQuiz, checkMateriAccess, type Question, type QuizResultData } from "@/lib/quiz";
 import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import QuizEngine from "@/components/quiz/QuizEngine";
@@ -70,6 +70,14 @@ export default function QuizPage() {
       }
       setMateri(materiData);
 
+      // Guard: cek akses user ke materi ini (per-user unlock)
+      const hasAccess = await checkMateriAccess(session.user.id, materiId);
+      if (!hasAccess) {
+        setError("Materi ini masih terkunci. Selesaikan quiz modul sebelumnya dulu!");
+        setIsLoading(false);
+        return;
+      }
+
       // Fetch questions
       const { data: questionsData, error: questionsError } = await supabase
         .from("quiz_questions")
@@ -113,6 +121,7 @@ export default function QuizPage() {
   const handleRetry = () => {
     setResult(null);
     setAnswers({});
+    setError(null);
   };
 
   const handleBackToLearn = () => {
@@ -125,16 +134,6 @@ export default function QuizPage() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-blue-50 text-blue-900">
         <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
         <p className="font-bold animate-pulse">Memuat quiz...</p>
-      </div>
-    );
-  }
-
-  // Submitting state
-  if (isSubmitting) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-blue-50 text-blue-900">
-        <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
-        <p className="font-bold animate-pulse">Menghitung hasil...</p>
       </div>
     );
   }
@@ -184,8 +183,16 @@ export default function QuizPage() {
           </div>
         </div>
 
+        {/* Submitting overlay — tetap dalam layout */}
+        {isSubmitting && (
+          <div className="flex-1 flex flex-col items-center justify-center py-12">
+            <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-3" />
+            <p className="font-bold text-blue-900 animate-pulse">Menghitung hasil...</p>
+          </div>
+        )}
+
         {/* Quiz Content */}
-        {result ? (
+        {!isSubmitting && result && (
           <QuizResult
             score={result.score}
             totalQuestions={result.totalQuestions}
@@ -196,7 +203,9 @@ export default function QuizPage() {
             onRetry={handleRetry}
             onBackToLearn={handleBackToLearn}
           />
-        ) : (
+        )}
+
+        {!isSubmitting && !result && (
           <QuizEngine questions={questions} onSubmit={handleSubmit} />
         )}
       </div>

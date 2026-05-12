@@ -125,13 +125,20 @@ export default function QuizEngine({ questions, onSubmit }: QuizEngineProps) {
         </button>
 
         {currentIndex === totalQuestions - 1 ? (
-          <button
-            onClick={handleFinish}
-            className="flex items-center gap-1 px-5 py-2 rounded-xl bg-green-600 text-white font-bold text-sm hover:bg-green-700 transition-colors shadow-md"
-          >
-            <CheckCircle2 className="w-4 h-4" />
-            Selesaikan
-          </button>
+          <div className="flex flex-col items-end gap-1">
+            {unansweredCount > 0 && (
+              <span className="text-[10px] text-red-500 font-semibold">
+                ⚠️ {unansweredCount} soal belum dijawab
+              </span>
+            )}
+            <button
+              onClick={handleFinish}
+              className="flex items-center gap-1 px-5 py-2 rounded-xl bg-green-600 text-white font-bold text-sm hover:bg-green-700 transition-colors shadow-md"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              Selesaikan
+            </button>
+          </div>
         ) : (
           <button
             onClick={goToNext}

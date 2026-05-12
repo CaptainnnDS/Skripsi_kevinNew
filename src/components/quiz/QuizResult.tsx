@@ -71,9 +71,15 @@ export default function QuizResult({
           </div>
         )}
 
-        {rewardCoins === 0 && (
+        {rewardCoins === 0 && score > 0 && (
           <p className="text-xs text-gray-400">
-            Tidak ada koin baru (soal yang benar sudah pernah dijawab benar sebelumnya)
+            Tidak ada koin baru — soal yang benar sudah pernah dijawab benar sebelumnya
+          </p>
+        )}
+
+        {rewardCoins === 0 && score === 0 && (
+          <p className="text-xs text-gray-400">
+            Belum ada jawaban yang benar, coba lagi ya!
           </p>
         )}
       </div>

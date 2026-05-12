@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { checkMateriAccess } from "@/lib/quiz";
 import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import RoomNavigation from "@/components/game/RoomNavigation";
@@ -74,16 +75,17 @@ export default function LearnDetail() {
         return;
       }
 
-      if (materiData.is_locked) {
-        setError("Materi ini masih terkunci. Selesaikan materi sebelumnya dulu!");
+      // Cek akses per-user (bukan dari is_locked global)
+      const hasAccess = await checkMateriAccess(session.user.id, materiData.id);
+      if (!hasAccess) {
+        setError("Materi ini masih terkunci. Selesaikan quiz modul sebelumnya dulu!");
         setIsLoading(false);
         return;
       }
 
       setMateri(materiData);
-      setIsLoading(false);
 
-      // Cek progress quiz
+      // Cek progress quiz (sebelum setIsLoading agar tidak flash)
       const { data: progress } = await supabase
         .from("user_materi_progress")
         .select("quiz_passed")
@@ -94,6 +96,8 @@ export default function LearnDetail() {
       if (progress?.quiz_passed) {
         setQuizPassed(true);
       }
+
+      setIsLoading(false);
     };
 
     loadData();
