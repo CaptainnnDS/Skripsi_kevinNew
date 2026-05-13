@@ -7,6 +7,7 @@ import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import RoomNavigation from "@/components/game/RoomNavigation";
 import PdfViewer from "@/components/learn/PdfViewer";
+import MateriQuizHistory, { type MateriAttempt } from "@/components/quiz/MateriQuizHistory";
 import { ArrowLeft, Loader2, Target } from "lucide-react";
 import { Fredoka } from "next/font/google";
 
@@ -30,6 +31,7 @@ export default function LearnDetail() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [quizPassed, setQuizPassed] = useState(false);
+  const [quizHistory, setQuizHistory] = useState<MateriAttempt[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -91,6 +93,36 @@ export default function LearnDetail() {
 
       if (progress?.quiz_passed) {
         setQuizPassed(true);
+      }
+
+      // Fetch riwayat quiz per materi
+      const { data: historyData } = await supabase
+        .from("user_question_history")
+        .select("is_correct, created_at")
+        .eq("user_id", session.user.id)
+        .eq("materi_id", materiId)
+        .order("created_at", { ascending: false });
+
+      if (historyData && historyData.length > 0) {
+        // Group by date
+        const grouped: Record<string, { total: number; correct: number }> = {};
+        historyData.forEach((h) => {
+          const date = h.created_at.split("T")[0];
+          if (!grouped[date]) grouped[date] = { total: 0, correct: 0 };
+          grouped[date].total++;
+          if (h.is_correct) grouped[date].correct++;
+        });
+
+        const attemptList: MateriAttempt[] = Object.entries(grouped)
+          .sort(([a], [b]) => b.localeCompare(a))
+          .map(([date, data]) => ({
+            date,
+            totalSoal: data.total,
+            jawabanBenar: data.correct,
+            koinDidapat: data.correct * 100,
+          }));
+
+        setQuizHistory(attemptList);
       }
 
       setIsLoading(false);
@@ -181,6 +213,9 @@ export default function LearnDetail() {
             {quizPassed ? "✅ Quiz Selesai — Coba Lagi?" : "Ikut Quiz 🎯"}
           </button>
         </div>
+
+        {/* Riwayat Quiz Per Materi */}
+        <MateriQuizHistory attempts={quizHistory} />
       </div>
 
       <NavigationBar />
