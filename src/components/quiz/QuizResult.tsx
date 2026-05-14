@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { Trophy, RotateCcw, ArrowLeft, ChevronDown, ChevronUp, CheckCircle2, XCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Trophy, RotateCcw, ArrowLeft, ChevronDown, ChevronUp, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import { Fredoka } from "next/font/google";
 import type { Question } from "@/lib/quiz";
 
@@ -13,6 +14,7 @@ interface QuizResultProps {
   isPassed: boolean;
   questions: Question[];
   answers: Record<number, number>;
+  nextMateriId?: number;
   onRetry: () => void;
   onBackToLearn: () => void;
 }
@@ -24,9 +26,11 @@ export default function QuizResult({
   isPassed,
   questions,
   answers,
+  nextMateriId,
   onRetry,
   onBackToLearn,
 }: QuizResultProps) {
+  const router = useRouter();
   const [showDetail, setShowDetail] = useState(false);
 
   return (
@@ -83,6 +87,17 @@ export default function QuizResult({
           </p>
         )}
       </div>
+
+      {/* Tombol Lanjut ke Modul Selanjutnya */}
+      {isPassed && nextMateriId && (
+        <button
+          onClick={() => router.push(`/learn/${nextMateriId}`)}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-sm hover:from-green-600 hover:to-emerald-700 transition-all shadow-md"
+        >
+          Lanjut ke Modul Selanjutnya
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      )}
 
       {/* Detail Toggle */}
       <button

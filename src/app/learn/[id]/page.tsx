@@ -42,6 +42,8 @@ export default function LearnDetail() {
         return;
       }
 
+      console.log(`[LearnDetail] params.id=${params.id}, userId=${session.user.id}`);
+
       // Fetch pet data
       const { data: pets, error: petError } = await supabase
         .from("pets")
@@ -74,7 +76,9 @@ export default function LearnDetail() {
       }
 
       // Cek akses per-user (bukan dari is_locked global)
+      console.log(`[LearnDetail] calling checkMateriAccess(materiId=${materiData.id})`);
       const hasAccess = await checkMateriAccess(session.user.id, materiData.id);
+      console.log(`[LearnDetail] checkMateriAccess result: ${hasAccess}`);
       if (!hasAccess) {
         setError("Materi ini masih terkunci. Selesaikan quiz modul sebelumnya dulu!");
         setIsLoading(false);
@@ -84,12 +88,16 @@ export default function LearnDetail() {
       setMateri(materiData);
 
       // Cek progress quiz (sebelum setIsLoading agar tidak flash)
-      const { data: progress } = await supabase
+      const { data: progress, error: progressErr } = await supabase
         .from("user_materi_progress")
         .select("quiz_passed")
         .eq("user_id", session.user.id)
         .eq("materi_id", materiId)
-        .single();
+        .maybeSingle();
+
+      if (progressErr) {
+        console.log(`[LearnDetail] progress fetch error: ${progressErr.message}`);
+      }
 
       if (progress?.quiz_passed) {
         setQuizPassed(true);
@@ -104,19 +112,20 @@ export default function LearnDetail() {
         .order("created_at", { ascending: false });
 
       if (historyData && historyData.length > 0) {
-        // Group by date
-        const grouped: Record<string, { total: number; correct: number }> = {};
+        // Group by full timestamp (bukan date saja, agar 2x attempt di hari sama tidak merge)
+        const grouped: Record<string, { total: number; correct: number; date: string }> = {};
         historyData.forEach((h) => {
-          const date = h.created_at.split("T")[0];
-          if (!grouped[date]) grouped[date] = { total: 0, correct: 0 };
-          grouped[date].total++;
-          if (h.is_correct) grouped[date].correct++;
+          const key = h.created_at; // full timestamp sebagai key
+          const date = h.created_at.split("T")[0]; // untuk display
+          if (!grouped[key]) grouped[key] = { total: 0, correct: 0, date };
+          grouped[key].total++;
+          if (h.is_correct) grouped[key].correct++;
         });
 
         const attemptList: MateriAttempt[] = Object.entries(grouped)
           .sort(([a], [b]) => b.localeCompare(a))
-          .map(([date, data]) => ({
-            date,
+          .map(([, data]) => ({
+            date: data.date,
             totalSoal: data.total,
             jawabanBenar: data.correct,
             koinDidapat: data.correct * 100,
@@ -199,24 +208,22 @@ export default function LearnDetail() {
         {/* PDF Viewer */}
         <PdfViewer pdfUrl={materi!.pdf_url} title={materi!.title} />
 
-        {/* Tombol Ikut Quiz */}
-        <div className="mt-4">
-          <button
-            onClick={() => router.push(`/quiz/${materi!.id}`)}
-            className={`w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-sm transition-all shadow-md
-              ${quizPassed
-                ? "bg-green-600 hover:bg-green-700 text-white"
-                : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
-              }`}
-          >
-            <Target className="w-5 h-5" />
-            {quizPassed ? "✅ Quiz Selesai — Coba Lagi?" : "Ikut Quiz 🎯"}
-          </button>
-        </div>
-
         {/* Riwayat Quiz Per Materi */}
         <MateriQuizHistory attempts={quizHistory} />
       </div>
+
+      {/* Floating Quiz Button */}
+      <button
+        onClick={() => router.push(`/quiz/${materi!.id}`)}
+        className={`fixed bottom-24 right-6 z-50 flex items-center gap-2 px-5 py-3 rounded-full font-bold text-sm shadow-xl hover:shadow-2xl hover:scale-105 transition-all
+          ${quizPassed
+            ? "bg-green-600 hover:bg-green-700 text-white"
+            : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+          }`}
+      >
+        <Target className="w-5 h-5" />
+        {quizPassed ? "Quiz ✅" : "Quiz 🎯"}
+      </button>
 
       <NavigationBar />
     </main>

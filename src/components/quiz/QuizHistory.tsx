@@ -2,13 +2,14 @@
 import { useRouter } from "next/navigation";
 import { RotateCcw, Eye, Trophy, Coins } from "lucide-react";
 import { Fredoka } from "next/font/google";
+import { PASS_THRESHOLD } from "@/lib/quiz";
 
 const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 
 export interface QuizAttempt {
   materiId: number;
   materiTitle: string;
-  date: string; // YYYY-MM-DD
+  date: string; // YYYY-MM-DD (untuk display)
   totalSoal: number;
   jawabanBenar: number;
   koinDidapat: number;
@@ -68,8 +69,9 @@ export default function QuizHistory({ attempts }: QuizHistoryProps) {
       {/* Attempt List */}
       <div className="bg-white rounded-2xl shadow-md border-2 border-blue-100 overflow-hidden">
         {attempts.map((attempt, idx) => {
-          const isPassed = attempt.jawabanBenar === attempt.totalSoal;
-          const progressPercent = Math.round((attempt.jawabanBenar / attempt.totalSoal) * 100);
+          const ratio = attempt.totalSoal > 0 ? attempt.jawabanBenar / attempt.totalSoal : 0;
+          const isPassed = ratio >= PASS_THRESHOLD;
+          const progressPercent = Math.round(ratio * 100);
 
           return (
             <div

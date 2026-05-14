@@ -6,6 +6,7 @@ import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import RoomNavigation from "@/components/game/RoomNavigation";
 import { BookOpen, ChevronRight, Lock, CheckCircle2 } from "lucide-react";
+import { PASS_THRESHOLD } from "@/lib/quiz";
 import { Fredoka } from "next/font/google";
 
 const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
@@ -15,7 +16,7 @@ interface Materi {
   title: string;
   description: string;
   is_locked: boolean;
-  order: number;
+  sort_order: number;
   pdf_url: string;
 }
 
@@ -56,32 +57,77 @@ export default function Learn() {
       const { data: materiData, error: materiError } = await supabase
         .from("materi")
         .select("*")
-        .order("order", { ascending: true });
+        .order("sort_order", { ascending: true });
 
       if (materiError) {
         console.log("Catatan: Ada masalah narik data materi", materiError.message);
       }
 
       // Fetch user progress
-      const { data: progressData } = await supabase
+      const { data: progressData, error: progressError } = await supabase
         .from("user_materi_progress")
         .select("materi_id, quiz_passed")
         .eq("user_id", session.user.id)
         .eq("quiz_passed", true);
 
       const passedMap: Record<number, boolean> = {};
-      if (progressData) {
+      if (!progressError && progressData) {
         progressData.forEach((p) => {
           passedMap[p.materi_id] = true;
         });
+      } else if (progressError) {
+        console.log("Catatan: Ada masalah narik data progress", progressError.message);
+      }
+
+      console.log(`[LearnPage] progressMap dari DB:`, passedMap);
+
+      // Fallback: cek history percobaan terbaik untuk materi yang belum ada di progress table
+      if (materiData && Object.keys(passedMap).length < materiData.length) {
+        const { data: historyData } = await supabase
+          .from("user_question_history")
+          .select("materi_id, created_at, is_correct")
+          .eq("user_id", session.user.id);
+
+        if (historyData && historyData.length > 0) {
+          const { data: questionCounts } = await supabase
+            .from("quiz_questions")
+            .select("materi_id");
+
+          if (questionCounts) {
+            const totalPerMateri: Record<number, number> = {};
+            for (const q of questionCounts) {
+              totalPerMateri[q.materi_id] = (totalPerMateri[q.materi_id] || 0) + 1;
+            }
+
+            // Group per materi + attempt (created_at)
+            const attempts: Record<string, { correct: number; total: number; materiId: number }> = {};
+            for (const h of historyData) {
+              const key = `${h.materi_id}_${h.created_at}`;
+              if (!attempts[key]) attempts[key] = { correct: 0, total: 0, materiId: h.materi_id };
+              attempts[key].total++;
+              if (h.is_correct) attempts[key].correct++;
+            }
+
+            // Cek tiap attempt, jika ≥70% tandai materi lulus
+            for (const [key, attempt] of Object.entries(attempts)) {
+              const total = totalPerMateri[attempt.materiId] || 0;
+              const ratio = total > 0 ? attempt.correct / total : 0;
+              console.log(`[LearnPage] fallback attempt key=${key} materiId=${attempt.materiId} correct=${attempt.correct}/${total} ratio=${ratio.toFixed(3)} threshold=${PASS_THRESHOLD}`);
+              if (total > 0 && !passedMap[attempt.materiId] && ratio >= PASS_THRESHOLD) {
+                console.log(`[LearnPage] fallback: materi ${attempt.materiId} passed via history`);
+                passedMap[attempt.materiId] = true;
+              }
+            }
+          }
+        }
       }
       setProgressMap(passedMap);
 
       // Tentukan lock status per-user:
-      // Modul pertama (order=1) selalu terbuka.
+      // Modul pertama (sort_order=1) selalu terbuka.
       // Modul lain terbuka jika modul sebelumnya sudah lulus quiz.
       if (materiData) {
-        const sorted = materiData.sort((a, b) => a.order - b.order);
+        const sorted = materiData.sort((a, b) => a.sort_order - b.sort_order);
         const withAccess = sorted.map((m, idx) => {
           if (idx === 0) {
             return { ...m, is_locked: false };
@@ -146,11 +192,11 @@ export default function Learn() {
                   : "border-blue-100 hover:border-blue-300 hover:shadow-lg active:scale-[0.98]"
                 }`}
             >
-              {/* Lock overlay */}
+              {/* Lock badge (subtle, di pojok) */}
               {materi.is_locked && (
-                <div className="absolute inset-0 flex items-center justify-center bg-white/50 rounded-2xl z-10">
-                  <div className="bg-gray-100 p-2 rounded-full">
-                    <Lock className="w-5 h-5 text-gray-400" />
+                <div className="absolute top-2 right-2 z-10">
+                  <div className="bg-gray-100/80 backdrop-blur-sm p-1.5 rounded-full">
+                    <Lock className="w-4 h-4 text-gray-400" />
                   </div>
                 </div>
               )}
@@ -158,7 +204,7 @@ export default function Learn() {
               <div className="flex items-start gap-3">
                 {/* Numbered badge */}
                 <div className="flex-shrink-0 bg-blue-600 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm">
-                  <span className="text-white font-bold text-sm">{materi.order}</span>
+                  <span className="text-white font-bold text-sm">{materi.sort_order}</span>
                 </div>
 
                 {/* Content */}

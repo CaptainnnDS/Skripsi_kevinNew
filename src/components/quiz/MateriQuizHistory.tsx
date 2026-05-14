@@ -1,6 +1,7 @@
 "use client";
 import { Fredoka } from "next/font/google";
 import { ScrollText } from "lucide-react";
+import { PASS_THRESHOLD } from "@/lib/quiz";
 
 const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 
@@ -26,6 +27,9 @@ export default function MateriQuizHistory({ attempts }: MateriQuizHistoryProps) 
     });
   };
 
+  // Best score ratio
+  const bestRatio = Math.max(...attempts.map((a) => (a.totalSoal > 0 ? a.jawabanBenar / a.totalSoal : 0)));
+
   return (
     <div className="mt-4">
       <div className="flex items-center gap-1.5 mb-2">
@@ -37,8 +41,10 @@ export default function MateriQuizHistory({ attempts }: MateriQuizHistoryProps) 
 
       <div className="bg-white rounded-2xl shadow-md border-2 border-blue-100 overflow-hidden">
         {attempts.map((attempt, idx) => {
-          const isPassed = attempt.jawabanBenar === attempt.totalSoal;
-          const progressPercent = Math.round((attempt.jawabanBenar / attempt.totalSoal) * 100);
+          const ratio = attempt.totalSoal > 0 ? attempt.jawabanBenar / attempt.totalSoal : 0;
+          const isPassed = ratio >= PASS_THRESHOLD;
+          const progressPercent = Math.round(ratio * 100);
+          const isBest = ratio === bestRatio && ratio > 0;
 
           return (
             <div
@@ -46,7 +52,12 @@ export default function MateriQuizHistory({ attempts }: MateriQuizHistoryProps) 
               className={`px-4 py-3 ${idx !== attempts.length - 1 ? "border-b border-blue-50" : ""}`}
             >
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs text-gray-500">{formatDate(attempt.date)}</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-gray-500">{formatDate(attempt.date)}</span>
+                  {isBest && (
+                    <span className="text-[10px] text-yellow-600 font-bold">🏆 Terbaik</span>
+                  )}
+                </div>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isPassed ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
                   {isPassed ? "✅ Lulus" : "❌"}
                 </span>

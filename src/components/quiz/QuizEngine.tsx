@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight, CheckCircle2, AlertTriangle } from "lucide-react";
 import { Fredoka } from "next/font/google";
 import type { Question } from "@/lib/quiz";
@@ -43,6 +43,29 @@ export default function QuizEngine({ questions, onSubmit }: QuizEngineProps) {
       onSubmit(answers);
     }
   };
+
+  // Keyboard shortcuts: 1-4 untuk pilih jawaban, ArrowLeft/Right untuk navigasi
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    // Jangan handle kalau modal konfirmasi terbuka
+    if (showConfirm) return;
+
+    const num = parseInt(e.key);
+    if (num >= 1 && num <= currentQuestion.options.length) {
+      selectOption(num - 1);
+    }
+
+    if (e.key === "ArrowLeft" && currentIndex > 0) {
+      setCurrentIndex((prev) => prev - 1);
+    }
+    if (e.key === "ArrowRight" && currentIndex < totalQuestions - 1) {
+      setCurrentIndex((prev) => prev + 1);
+    }
+  }, [currentIndex, totalQuestions, currentQuestion, showConfirm]);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
 
   const confirmSubmit = () => {
     setShowConfirm(false);

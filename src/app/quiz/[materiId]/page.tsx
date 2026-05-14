@@ -31,6 +31,7 @@ export default function QuizPage() {
   const [result, setResult] = useState<QuizResultData | null>(null);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [userId, setUserId] = useState<string>("");
+  const [nextMateriId, setNextMateriId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     const loadData = async () => {
@@ -91,6 +92,26 @@ export default function QuizPage() {
       }
 
       setQuestions(questionsData);
+
+      // Fetch next materi id (untuk tombol "Lanjut ke Modul Selanjutnya")
+      const { data: currentMateri } = await supabase
+        .from("materi")
+        .select("sort_order")
+        .eq("id", materiId)
+        .single();
+
+      if (currentMateri) {
+        const { data: nextMateri } = await supabase
+          .from("materi")
+          .select("id")
+          .eq("sort_order", currentMateri.sort_order + 1)
+          .single();
+
+        if (nextMateri) {
+          setNextMateriId(nextMateri.id);
+        }
+      }
+
       setIsLoading(false);
     };
 
@@ -124,7 +145,7 @@ export default function QuizPage() {
   };
 
   const handleBackToLearn = () => {
-    router.push("/learn");
+    router.push(`/learn/${materiId}`);
   };
 
   // Loading state
@@ -201,6 +222,7 @@ export default function QuizPage() {
             isPassed={result.isPassed}
             questions={questions}
             answers={answers}
+            nextMateriId={nextMateriId}
             onRetry={handleRetry}
             onBackToLearn={handleBackToLearn}
           />

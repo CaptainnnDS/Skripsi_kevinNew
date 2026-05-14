@@ -150,7 +150,7 @@ export default function PdfViewer({ pdfUrl, title }: PdfViewerProps) {
               className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 font-semibold text-sm hover:bg-blue-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
-              Prev
+              Sebelumnya
             </button>
 
             <span className="text-sm text-gray-600 font-medium">
@@ -163,7 +163,7 @@ export default function PdfViewer({ pdfUrl, title }: PdfViewerProps) {
               disabled={pageNumber >= numPages}
               className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 font-semibold text-sm hover:bg-blue-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
-              Next
+              Selanjutnya
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
