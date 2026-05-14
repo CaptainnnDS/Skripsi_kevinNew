@@ -1,11 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { submitQuiz, checkMateriAccess, type Question, type QuizResultData } from "@/lib/quiz";
 import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import QuizEngine from "@/components/quiz/QuizEngine";
+import QuizReview from "@/components/quiz/QuizReview";
 import QuizResult from "@/components/quiz/QuizResult";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Fredoka } from "next/font/google";
@@ -15,6 +16,31 @@ const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 interface Materi {
   id: number;
   title: string;
+}
+
+/** Fisher-Yates shuffle */
+function shuffleArray<T>(arr: T[]): T[] {
+  const shuffled = [...arr];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+/** Shuffle options dan update correct_answer index */
+function shuffleQuestionOptions(question: Question): Question {
+  const indices = question.options.map((_, i) => i);
+  // Fisher-Yates shuffle indices
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  return {
+    ...question,
+    options: indices.map((i) => question.options[i]),
+    correct_answer: indices.indexOf(question.correct_answer),
+  };
 }
 
 export default function QuizPage() {
@@ -32,6 +58,20 @@ export default function QuizPage() {
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [userId, setUserId] = useState<string>("");
   const [nextMateriId, setNextMateriId] = useState<number | undefined>(undefined);
+
+  // Review state
+  const [showReview, setShowReview] = useState(false);
+
+  // Tab switch detection
+  const [tabSwitchCount, setTabSwitchCount] = useState(0);
+  const [showTabWarning, setShowTabWarning] = useState(false);
+
+  // Leave confirmation
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [pendingNav, setPendingNav] = useState<string | null>(null);
+
+  // Quiz sedang aktif (belum submit, belum ada result)
+  const isQuizActive = !result && !isSubmitting && !isLoading && !error;
 
   useEffect(() => {
     const loadData = async () => {
@@ -70,7 +110,7 @@ export default function QuizPage() {
       }
       setMateri(materiData);
 
-      // Guard: cek akses user ke materi ini (per-user unlock)
+      // Guard: cek akses user ke materi ini
       const hasAccess = await checkMateriAccess(session.user.id, materiId);
       if (!hasAccess) {
         setError("Materi ini masih terkunci. Selesaikan quiz modul sebelumnya dulu!");
@@ -91,9 +131,11 @@ export default function QuizPage() {
         return;
       }
 
-      setQuestions(questionsData);
+      // Shuffle soal & opsi
+      const shuffledQuestions = shuffleArray(questionsData).map(shuffleQuestionOptions);
+      setQuestions(shuffledQuestions);
 
-      // Fetch next materi id (untuk tombol "Lanjut ke Modul Selanjutnya")
+      // Fetch next materi id
       const { data: currentMateri } = await supabase
         .from("materi")
         .select("sort_order")
@@ -118,8 +160,74 @@ export default function QuizPage() {
     loadData();
   }, [router, materiId]);
 
-  const handleSubmit = async (submittedAnswers: Record<number, number>) => {
+  // Tab switch detection
+  useEffect(() => {
+    if (!isQuizActive) return;
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        setTabSwitchCount((prev) => prev + 1);
+        setShowTabWarning(true);
+        // Auto-hide warning after 3 seconds
+        setTimeout(() => setShowTabWarning(false), 3000);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [isQuizActive]);
+
+  // beforeunload — prevent accidental close
+  useEffect(() => {
+    if (!isQuizActive) return;
+
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isQuizActive]);
+
+  // Intercept browser back button
+  useEffect(() => {
+    if (!isQuizActive) return;
+
+    window.history.pushState(null, "", window.location.href);
+    const handlePopState = () => {
+      window.history.pushState(null, "", window.location.href);
+      setShowLeaveConfirm(true);
+      setPendingNav(`/learn/${materiId}`);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [isQuizActive, materiId]);
+
+  // Handle navigasi dengan konfirmasi
+  const handleBackClick = useCallback((path: string) => {
+    if (isQuizActive) {
+      setShowLeaveConfirm(true);
+      setPendingNav(path);
+    } else {
+      router.push(path);
+    }
+  }, [isQuizActive, router]);
+
+  const confirmLeave = () => {
+    setShowLeaveConfirm(false);
+    if (pendingNav) router.push(pendingNav);
+  };
+
+  // Quiz flow handlers
+  const handleFinish = (submittedAnswers: Record<number, number>) => {
     setAnswers(submittedAnswers);
+    setShowReview(true);
+  };
+
+  const handleConfirmSubmit = async () => {
+    setShowReview(false);
     setIsSubmitting(true);
 
     try {
@@ -127,7 +235,7 @@ export default function QuizPage() {
         userId,
         materiId,
         questions,
-        answers: submittedAnswers,
+        answers,
       });
       setResult(quizResult);
     } catch (err) {
@@ -138,10 +246,18 @@ export default function QuizPage() {
     }
   };
 
+  const handleBackToEdit = () => {
+    setShowReview(false);
+  };
+
   const handleRetry = () => {
+    // Re-shuffle untuk attempt baru
+    setQuestions((prev) => shuffleArray(prev).map(shuffleQuestionOptions));
     setResult(null);
     setAnswers({});
+    setShowReview(false);
     setError(null);
+    setTabSwitchCount(0);
   };
 
   const handleBackToLearn = () => {
@@ -185,11 +301,18 @@ export default function QuizPage() {
     <main className="flex min-h-screen flex-col bg-blue-50 text-gray-900 pb-24 relative overflow-hidden">
       <TopBar pet={petData} />
 
+      {/* Tab switch warning toast */}
+      {showTabWarning && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] bg-red-500 text-white px-4 py-2 rounded-xl shadow-lg text-sm font-semibold animate-bounce">
+          👀 Jangan buka tab lain ya! ({tabSwitchCount}x terdeteksi)
+        </div>
+      )}
+
       <div className="flex-1 flex flex-col px-4 py-4 relative z-10 max-w-lg mx-auto w-full">
         {/* Header */}
         <div className="mb-4">
           <button
-            onClick={() => router.push(`/learn/${materiId}`)}
+            onClick={() => handleBackClick(`/learn/${materiId}`)}
             className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 font-semibold mb-2 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -205,7 +328,7 @@ export default function QuizPage() {
           </div>
         </div>
 
-        {/* Submitting overlay — tetap dalam layout */}
+        {/* Submitting overlay */}
         {isSubmitting && (
           <div className="flex-1 flex flex-col items-center justify-center py-12">
             <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-3" />
@@ -213,7 +336,7 @@ export default function QuizPage() {
           </div>
         )}
 
-        {/* Quiz Content */}
+        {/* Result */}
         {!isSubmitting && result && (
           <QuizResult
             score={result.score}
@@ -228,12 +351,55 @@ export default function QuizPage() {
           />
         )}
 
-        {!isSubmitting && !result && (
-          <QuizEngine questions={questions} onSubmit={handleSubmit} />
+        {/* Review Screen */}
+        {!isSubmitting && !result && showReview && (
+          <QuizReview
+            questions={questions}
+            answers={answers}
+            onConfirm={handleConfirmSubmit}
+            onBack={handleBackToEdit}
+          />
+        )}
+
+        {/* Quiz Engine */}
+        {!isSubmitting && !result && !showReview && (
+          <QuizEngine questions={questions} onFinish={handleFinish} />
         )}
       </div>
 
       <NavigationBar />
+
+      {/* Leave Confirmation Modal */}
+      {showLeaveConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+            <span className="text-4xl block text-center mb-3">😱</span>
+            <h3 className={`text-lg font-bold text-gray-900 text-center mb-2 ${funFont.className}`}>
+              Yakin Keluar?
+            </h3>
+            <p className="text-sm text-gray-600 text-center mb-1">
+              Jawaban yang belum disubmit akan hilang.
+            </p>
+            <p className="text-xs text-gray-400 text-center mb-4">
+              Progress quiz tidak akan tersimpan.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setShowLeaveConfirm(false); setPendingNav(null); }}
+                className="flex-1 px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-colors"
+              >
+                Lanjutkan Quiz
+              </button>
+              <button
+                onClick={confirmLeave}
+                className="flex-1 px-4 py-2 rounded-xl border-2 border-gray-200 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-colors"
+              >
+                Ya, Keluar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

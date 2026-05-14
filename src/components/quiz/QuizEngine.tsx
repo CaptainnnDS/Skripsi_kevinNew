@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { ChevronLeft, ChevronRight, CheckCircle2, AlertTriangle } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
 import { Fredoka } from "next/font/google";
 import type { Question } from "@/lib/quiz";
 
@@ -8,18 +8,16 @@ const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 
 interface QuizEngineProps {
   questions: Question[];
-  onSubmit: (answers: Record<number, number>) => void;
+  onFinish: (answers: Record<number, number>) => void;
 }
 
-export default function QuizEngine({ questions, onSubmit }: QuizEngineProps) {
+export default function QuizEngine({ questions, onFinish }: QuizEngineProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [showConfirm, setShowConfirm] = useState(false);
 
   const currentQuestion = questions[currentIndex];
   const totalQuestions = questions.length;
   const answeredCount = Object.keys(answers).length;
-  const unansweredCount = totalQuestions - answeredCount;
 
   const selectOption = (optionIndex: number) => {
     setAnswers((prev) => ({
@@ -37,44 +35,32 @@ export default function QuizEngine({ questions, onSubmit }: QuizEngineProps) {
   };
 
   const handleFinish = () => {
-    if (unansweredCount > 0) {
-      setShowConfirm(true);
-    } else {
-      onSubmit(answers);
-    }
+    onFinish(answers);
   };
 
-  // Keyboard shortcuts: 1-4 untuk pilih jawaban, ArrowLeft/Right untuk navigasi
+  // Keyboard shortcuts: 1-4 pilih jawaban, ArrowLeft/Right navigasi
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    // Jangan handle kalau modal konfirmasi terbuka
-    if (showConfirm) return;
-
     const num = parseInt(e.key);
     if (num >= 1 && num <= currentQuestion.options.length) {
       selectOption(num - 1);
     }
-
     if (e.key === "ArrowLeft" && currentIndex > 0) {
       setCurrentIndex((prev) => prev - 1);
     }
     if (e.key === "ArrowRight" && currentIndex < totalQuestions - 1) {
       setCurrentIndex((prev) => prev + 1);
     }
-  }, [currentIndex, totalQuestions, currentQuestion, showConfirm]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex, totalQuestions, currentQuestion]);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
-  const confirmSubmit = () => {
-    setShowConfirm(false);
-    onSubmit(answers);
-  };
-
   return (
     <div className="flex flex-col gap-4">
-      {/* Stepper */}
+      {/* Stepper (clickable) */}
       <div className="bg-white rounded-2xl shadow-md border-2 border-blue-100 p-3">
         <div className="flex flex-wrap gap-1.5 justify-center">
           {questions.map((q, idx) => {
@@ -148,24 +134,17 @@ export default function QuizEngine({ questions, onSubmit }: QuizEngineProps) {
         </button>
 
         {currentIndex === totalQuestions - 1 ? (
-          <div className="flex flex-col items-end gap-1">
-            {unansweredCount > 0 && (
-              <span className="text-[10px] text-red-500 font-semibold">
-                ⚠️ {unansweredCount} soal belum dijawab
-              </span>
-            )}
-            <button
-              onClick={handleFinish}
-              className="flex items-center gap-1 px-5 py-2 rounded-xl bg-green-600 text-white font-bold text-sm hover:bg-green-700 transition-colors shadow-md"
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              Selesaikan
-            </button>
-          </div>
+          <button
+            onClick={handleFinish}
+            className="flex items-center gap-1 px-5 py-2 rounded-xl bg-green-600 text-white font-bold text-sm hover:bg-green-700 transition-colors shadow-md"
+          >
+            <CheckCircle2 className="w-4 h-4" />
+            Review & Selesaikan
+          </button>
         ) : (
           <button
             onClick={goToNext}
-            className="flex items-center gap-1 px-4 py-2 rounded-xl bg-white border-2 border-blue-100 text-blue-600 font-semibold text-sm hover:bg-blue-50 transition-colors"
+            className="flex items-center gap-1 px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 transition-colors shadow-sm"
           >
             Selanjutnya
             <ChevronRight className="w-4 h-4" />
@@ -173,37 +152,10 @@ export default function QuizEngine({ questions, onSubmit }: QuizEngineProps) {
         )}
       </div>
 
-      {/* Confirm Modal */}
-      {showConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
-            <div className="flex items-center gap-2 mb-3">
-              <AlertTriangle className="w-6 h-6 text-yellow-500" />
-              <h3 className={`text-lg font-bold text-gray-900 ${funFont.className}`}>
-                Yakin submit?
-              </h3>
-            </div>
-            <p className="text-sm text-gray-600 mb-4">
-              Masih ada <span className="font-bold text-red-600">{unansweredCount} soal</span> yang
-              belum dijawab. Soal yang belum dijawab akan dianggap salah.
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowConfirm(false)}
-                className="flex-1 px-4 py-2 rounded-xl border-2 border-gray-200 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-colors"
-              >
-                Kembali
-              </button>
-              <button
-                onClick={confirmSubmit}
-                className="flex-1 px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-colors"
-              >
-                Submit
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Keyboard hint */}
+      <p className="text-center text-[10px] text-gray-300">
+        Tekan 1-{currentQuestion.options.length} untuk pilih jawaban, ←/→ untuk navigasi
+      </p>
     </div>
   );
 }
