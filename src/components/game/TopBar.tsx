@@ -1,24 +1,36 @@
 "use client";
-import { User, Utensils, Zap, Heart, Droplets, LogOut } from "lucide-react";
-import { useState, useEffect } from "react";
+import { User, Utensils, Zap, Heart, Droplets, LogOut, Bell, Check } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import {
+  getUnreadNotificationCount,
+  getNotifications,
+  markAllNotificationsRead,
+  Notification,
+} from "@/lib/leaderboard";
 
 export default function TopBar({ pet }: { pet: any }) {
   const currentPet = pet || { coins: 0, hunger: 0, energy: 0, happiness: 0, cleanliness: 0 };
   
   // State buat ngatur Dropdown dan nyimpen Email
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [userEmail, setUserEmail] = useState("Loading...");
+  const [userId, setUserId] = useState<string | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
   const router = useRouter();
 
-  // Efek buat narik email user langsung dari Supabase
+  // Fetch user info
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           setUserEmail(user.email || "User");
+          setUserId(user.id);
         }
       } catch {
         setUserEmail("User");
@@ -26,6 +38,70 @@ export default function TopBar({ pet }: { pet: any }) {
     };
     fetchUser();
   }, []);
+
+  // Fetch unread count
+  const fetchUnreadCount = useCallback(async () => {
+    if (!userId) return;
+    const count = await getUnreadNotificationCount(userId);
+    setUnreadCount(count);
+  }, [userId]);
+
+  // Polling notifikasi setiap 30 detik
+  useEffect(() => {
+    if (!userId) return;
+
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 30000);
+
+    return () => clearInterval(interval);
+  }, [userId, fetchUnreadCount]);
+
+  // Fetch notifications when dropdown opens
+  const handleOpenNotifications = async () => {
+    setShowNotifications(!showNotifications);
+    setShowDropdown(false);
+
+    if (!showNotifications && userId) {
+      setLoadingNotifications(true);
+      try {
+        const notifs = await getNotifications(userId);
+        setNotifications(notifs);
+      } catch (err) {
+        console.error("Error fetching notifications:", err);
+      } finally {
+        setLoadingNotifications(false);
+      }
+    }
+  };
+
+  // Mark all as read
+  const handleMarkAllRead = async () => {
+    if (!userId) return;
+    try {
+      await markAllNotificationsRead(userId);
+      setUnreadCount(0);
+      setNotifications((prev) =>
+        prev.map((n) => ({ ...n, is_read: true }))
+      );
+    } catch (err) {
+      console.error("Error marking notifications as read:", err);
+    }
+  };
+
+  // Format relative time
+  const formatRelativeTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return "Baru saja";
+    if (diffMins < 60) return `${diffMins} menit lalu`;
+    if (diffHours < 24) return `${diffHours} jam lalu`;
+    return `${diffDays} hari lalu`;
+  };
 
   // Fungsi buat ngehancurin sesi (Log Out) dan nendang balik ke halaman Login
   const handleLogout = async () => {
@@ -40,13 +116,16 @@ export default function TopBar({ pet }: { pet: any }) {
   return (
     <nav className="w-full bg-white/90 backdrop-blur-md px-6 py-4 flex justify-between items-center sticky top-0 z-50 shadow-sm border-b border-blue-100">
       
-      {/* KIRI: Foto Profil & Koin */}
+      {/* KIRI: Foto Profil, Notifikasi & Koin */}
       <div className="flex items-center gap-4">
         
-        {/* Wrapper Profil + Dropdown (Pake relative biar dropdownnya nempel di bawah tombol) */}
+        {/* Wrapper Profil + Dropdown */}
         <div className="relative">
           <button 
-            onClick={() => setShowDropdown(!showDropdown)}
+            onClick={() => {
+              setShowDropdown(!showDropdown);
+              setShowNotifications(false);
+            }}
             className="bg-blue-500 hover:bg-blue-600 transition-colors p-2.5 rounded-full text-white shadow-sm border-2 border-blue-300"
           >
             <User size={24} />
@@ -73,6 +152,65 @@ export default function TopBar({ pet }: { pet: any }) {
                 Log Out
               </button>
               
+            </div>
+          )}
+        </div>
+
+        {/* Tombol Notifikasi */}
+        <div className="relative">
+          <button
+            onClick={handleOpenNotifications}
+            className="relative bg-gray-100 hover:bg-gray-200 transition-colors p-2.5 rounded-full text-gray-600"
+          >
+            <Bell size={22} />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </button>
+
+          {/* Dropdown Notifikasi */}
+          {showNotifications && (
+            <div className="absolute top-14 left-0 w-72 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50 animate-in fade-in zoom-in duration-200">
+              <div className="px-4 py-3 border-b border-gray-100 bg-slate-50 flex items-center justify-between">
+                <p className="text-sm font-bold text-gray-800">📬 Notifikasi</p>
+                {unreadCount > 0 && (
+                  <button
+                    onClick={handleMarkAllRead}
+                    className="text-xs text-blue-500 hover:text-blue-600 font-semibold flex items-center gap-1"
+                  >
+                    <Check size={14} />
+                    Tandai Dibaca
+                  </button>
+                )}
+              </div>
+
+              <div className="max-h-64 overflow-y-auto">
+                {loadingNotifications ? (
+                  <div className="p-4 text-center text-gray-500 text-sm">
+                    Memuat...
+                  </div>
+                ) : notifications.length === 0 ? (
+                  <div className="p-4 text-center text-gray-500 text-sm">
+                    Belum ada notifikasi
+                  </div>
+                ) : (
+                  notifications.map((notif) => (
+                    <div
+                      key={notif.id}
+                      className={`px-4 py-3 border-b border-gray-50 ${
+                        !notif.is_read ? "bg-blue-50" : ""
+                      }`}
+                    >
+                      <p className="text-sm text-gray-800">{notif.message}</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {formatRelativeTime(notif.created_at)}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           )}
         </div>

@@ -262,11 +262,11 @@ export async function submitQuiz(params: {
     }
   }
 
-  // 6. Update koin di pets (tambah, bukan replace)
+  // 6. Update koin di pets (tambah coins + total_coins_earned)
   if (rewardCoins > 0) {
     const { data: pet, error: petFetchError } = await supabase
       .from("pets")
-      .select("coins")
+      .select("coins, total_coins_earned")
       .eq("user_id", userId)
       .single();
 
@@ -277,7 +277,10 @@ export async function submitQuiz(params: {
     if (pet) {
       const { error: petUpdateError } = await supabase
         .from("pets")
-        .update({ coins: (pet.coins || 0) + rewardCoins })
+        .update({
+          coins: (pet.coins || 0) + rewardCoins,
+          total_coins_earned: (pet.total_coins_earned || 0) + rewardCoins,
+        })
         .eq("user_id", userId);
 
       if (petUpdateError) {
