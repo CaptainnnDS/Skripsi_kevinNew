@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabase, safeFetch } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
 import RoomNavigation from "@/components/game/RoomNavigation";
 import PetCharacter from "@/components/game/PetCharacter"; 
@@ -149,16 +149,22 @@ export default function Bedroom() {
     const fm: Record<string, string> = { colors: 'body_color', bedroom: 'equipped_bed', nightlight: 'equipped_nightlight', wallpaper: 'equipped_wallpaper' };
     const field = fm[item.category];
     if (field) {
+      const { error } = await safeFetch(
+        supabase.from("pets").update({ [field]: item.icon_name }).eq("id", petData.id)
+      );
+      if (error) { alert("Gagal equip item. Coba lagi."); return; }
       setPetData({ ...petData, [field]: item.icon_name });
-      await supabase.from("pets").update({ [field]: item.icon_name }).eq("id", petData.id);
     }
   };
 
   const toggleSleep = async () => {
     if (!petData) return;
     const ns = !petData.is_sleeping;
+    const { error } = await safeFetch(
+      supabase.from("pets").update({ is_sleeping: ns }).eq("id", petData.id)
+    );
+    if (error) { alert("Gagal update status tidur. Coba lagi."); return; }
     setPetData({ ...petData, is_sleeping: ns });
-    await supabase.from("pets").update({ is_sleeping: ns }).eq("id", petData.id);
   };
 
   if (isAuthLoading || !petData) return <div className="min-h-screen bg-[#EEF2FF]"></div>;

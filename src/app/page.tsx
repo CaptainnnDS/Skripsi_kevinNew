@@ -1,11 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabase, safeFetch } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
 import RoomNavigation from "@/components/game/RoomNavigation";
 import PetCharacter from "@/components/game/PetCharacter"; 
-import NavigationBar from "@/components/game/NavigationBar"; // <-- INI YANG KEMAREN ILANG BRAY
+import NavigationBar from "@/components/game/NavigationBar";
+import NetworkError from "@/components/NetworkError";
 import { Fredoka } from "next/font/google";
 
 const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
@@ -14,32 +15,48 @@ export default function Home() {
   const router = useRouter();
   const [petData, setPetData] = useState<any>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [networkError, setNetworkError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadData = async () => {
+  const loadData = useCallback(async () => {
+    setNetworkError(null);
+    setIsAuthLoading(true);
+
+    try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         router.push("/login");
         return;
       }
 
-      // Tarik data pet dari database
-      const { data: pets, error } = await supabase
-        .from("pets")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .limit(1);
+      const { data: pets, error } = await safeFetch(
+        supabase.from("pets").select("*").eq("user_id", session.user.id).limit(1)
+      );
+
+      if (error) {
+        setNetworkError(error.message || "Gagal memuat data. Periksa koneksi.");
+        setIsAuthLoading(false);
+        return;
+      }
 
       if (pets && pets.length > 0) {
         setPetData(pets[0]);
-        setIsAuthLoading(false);
       } else {
-        router.push("/");
+        // Pet belum ada — arahkan ke setup
+        router.push("/setup");
         return;
       }
-    };
-    loadData();
+    } catch (err: any) {
+      setNetworkError(err.message || "Terjadi kesalahan.");
+    } finally {
+      setIsAuthLoading(false);
+    }
   }, [router]);
+
+  useEffect(() => { loadData(); }, [loadData]);
+
+  if (networkError) {
+    return <NetworkError message={networkError} onRetry={loadData} />;
+  }
 
   if (isAuthLoading || !petData) {
     return (

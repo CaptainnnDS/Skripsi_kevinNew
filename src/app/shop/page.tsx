@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabase, safeFetch } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import RoomNavigation from "@/components/game/RoomNavigation";
@@ -126,20 +126,49 @@ export default function Shop() {
     setIsBuying(true);
     const newCoins = currentCoins - item.price;
 
-    const { error: updateError } = await supabase.from("pets").update({ coins: newCoins }).eq("id", petData.id);
-    if (updateError) { setIsBuying(false); return; }
+    try {
+      // 1. Insert/update inventory DULU
+      const { data: existingInv, error: invCheckErr } = await safeFetch<any>(
+        supabase.from("inventory").select("*").eq("user_id", petData.user_id).eq("item_id", item.id).maybeSingle()
+      );
+      if (invCheckErr) { alert("Gagal cek inventory. Coba lagi."); setIsBuying(false); return; }
 
-    const { data: existingInv } = await supabase.from("inventory").select("*").eq("user_id", petData.user_id).eq("item_id", item.id).single();
-    if (existingInv) {
-      await supabase.from("inventory").update({ quantity: existingInv.quantity + 1 }).eq("id", existingInv.id);
-    } else {
-      await supabase.from("inventory").insert({ user_id: petData.user_id, item_id: item.id, quantity: 1 });
+      if (existingInv) {
+        const { error: invUpErr } = await safeFetch(
+          supabase.from("inventory").update({ quantity: existingInv.quantity + 1 }).eq("id", existingInv.id)
+        );
+        if (invUpErr) { alert("Gagal update inventory. Coba lagi."); setIsBuying(false); return; }
+      } else {
+        const { error: invInsErr } = await safeFetch(
+          supabase.from("inventory").insert({ user_id: petData.user_id, item_id: item.id, quantity: 1 })
+        );
+        if (invInsErr) { alert("Gagal tambah item. Coba lagi."); setIsBuying(false); return; }
+      }
+
+      // 2. Baru potong koin (setelah item masuk)
+      const { error: updateError } = await safeFetch(
+        supabase.from("pets").update({ coins: newCoins }).eq("id", petData.id)
+      );
+      if (updateError) {
+        // Rollback inventory
+        if (existingInv) {
+          await supabase.from("inventory").update({ quantity: existingInv.quantity }).eq("id", existingInv.id);
+        } else {
+          await supabase.from("inventory").delete().eq("user_id", petData.user_id).eq("item_id", item.id);
+        }
+        alert("Gagal potong koin. Coba lagi.");
+        setIsBuying(false);
+        return;
+      }
+
+      setPetData({ ...petData, coins: newCoins });
+      setPopupMsg(`Berhasil beli ${item.name}! Cek Closet ya.`);
+      setTimeout(() => setPopupMsg(""), 2500);
+    } catch (err) {
+      alert("Terjadi kesalahan. Coba lagi.");
+    } finally {
+      setIsBuying(false);
     }
-
-    setPetData({ ...petData, coins: newCoins });
-    setIsBuying(false);
-    setPopupMsg(`Berhasil beli ${item.name}! Cek Closet ya.`);
-    setTimeout(() => setPopupMsg(""), 2500); 
   };
 
   if (isAuthLoading || !petData) return <div className="min-h-screen bg-blue-50"></div>;

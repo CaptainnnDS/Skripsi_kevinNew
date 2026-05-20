@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabase, safeFetch } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
 import RoomNavigation from "@/components/game/RoomNavigation";
 import PetCharacter from "@/components/game/PetCharacter"; 
@@ -94,7 +94,10 @@ export default function BathRoom() {
       const item = inventory[activeSoapIndexLower];
       if (item.count <= 0) return;
 
-      await supabase.from("inventory").update({ quantity: item.count - 1 }).eq("id", item.inv_id);
+      const { error: invErr } = await safeFetch(
+        supabase.from("inventory").update({ quantity: item.count - 1 }).eq("id", item.inv_id)
+      );
+      if (invErr) { alert("Gagal pakai sabun. Coba lagi."); return; }
       
       const updatedInv = [...inventory];
       updatedInv[activeSoapIndexLower].count -= 1;
@@ -119,7 +122,10 @@ export default function BathRoom() {
         setActiveSoapIcon(null); 
 
         if (currentCleanliness < 100) {
-            await supabase.from("pets").update({ cleanliness: newCleanliness }).eq("id", petData.id);
+            const { error } = await safeFetch(
+              supabase.from("pets").update({ cleanliness: newCleanliness }).eq("id", petData.id)
+            );
+            if (error) { alert("Gagal update kebersihan. Coba lagi."); return; }
             setPetData({ ...petData, cleanliness: newCleanliness });
         }
       }, 1500);

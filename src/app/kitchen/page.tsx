@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabase, safeFetch } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
 import RoomNavigation from "@/components/game/RoomNavigation";
 import PetCharacter from "@/components/game/PetCharacter"; 
@@ -69,7 +69,7 @@ export default function Kitchen() {
 
   const handleDropToPet = async (e: React.DragEvent) => {
     e.preventDefault(); 
-    if (activeFoodIndexLower === null || !petData || petData.is_sleeping) return; // Ga bisa disuapin kalo tidur
+    if (activeFoodIndexLower === null || !petData || petData.is_sleeping) return;
     
     const item = inventory[activeFoodIndexLower];
     if (item.count <= 0) return;
@@ -81,8 +81,21 @@ export default function Kitchen() {
 
     const newStatValue = Math.max(0, Math.min(100, currentStatValue + item.value));
 
-    await supabase.from("pets").update({ [item.type]: newStatValue }).eq("id", petData.id);
-    await supabase.from("inventory").update({ quantity: item.count - 1 }).eq("id", item.inv_id);
+    // DB dulu, baru update local state
+    const { error: petErr } = await safeFetch(
+      supabase.from("pets").update({ [item.type]: newStatValue }).eq("id", petData.id)
+    );
+    if (petErr) { alert("Gagal memberi makan. Coba lagi."); return; }
+
+    const { error: invErr } = await safeFetch(
+      supabase.from("inventory").update({ quantity: item.count - 1 }).eq("id", item.inv_id)
+    );
+    if (invErr) {
+      // Rollback pet update
+      await supabase.from("pets").update({ [item.type]: currentStatValue }).eq("id", petData.id);
+      alert("Gagal update inventory. Coba lagi.");
+      return;
+    }
 
     const updatedInventory = [...inventory];
     updatedInventory[activeFoodIndexLower] = { ...item, count: item.count - 1 };

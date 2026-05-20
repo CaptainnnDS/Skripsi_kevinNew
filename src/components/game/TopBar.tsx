@@ -15,10 +15,13 @@ export default function TopBar({ pet }: { pet: any }) {
   // Efek buat narik email user langsung dari Supabase
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        // Kalau user punya username di database, bisa ditarik juga nanti. Sementara kita pake email.
-        setUserEmail(user.email || "User");
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          setUserEmail(user.email || "User");
+        }
+      } catch {
+        setUserEmail("User");
       }
     };
     fetchUser();
@@ -26,7 +29,11 @@ export default function TopBar({ pet }: { pet: any }) {
 
   // Fungsi buat ngehancurin sesi (Log Out) dan nendang balik ke halaman Login
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // Tetap redirect meskipun signOut gagal
+    }
     router.push("/login");
   };
 
