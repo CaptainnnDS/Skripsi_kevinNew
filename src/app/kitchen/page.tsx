@@ -5,6 +5,7 @@ import { supabase, safeFetch } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
 import RoomNavigation from "@/components/game/RoomNavigation";
 import PetCharacter from "@/components/game/PetCharacter"; 
+import Image from "next/image";
 import { Refrigerator, ChevronLeft, ChevronRight, Store, X } from "lucide-react"; 
 import { Fredoka } from "next/font/google";
 
@@ -111,6 +112,17 @@ export default function Kitchen() {
 
   return (
     <main className="flex min-h-screen flex-col bg-orange-50 text-gray-900 pb-32 relative overflow-hidden">
+      {/* BACKGROUND IMAGE */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/bg/image.png"
+          alt=""
+          fill
+          className="object-cover"
+          priority
+        />
+      </div>
+
       <div className="relative z-[60]"><TopBar pet={petData} /></div>
       
       {!showFridge && <RoomNavigation />}

@@ -7,6 +7,7 @@ import RoomNavigation from "@/components/game/RoomNavigation";
 import PetCharacter from "@/components/game/PetCharacter"; 
 import NavigationBar from "@/components/game/NavigationBar";
 import NetworkError from "@/components/NetworkError";
+import Image from "next/image";
 import { Fredoka } from "next/font/google";
 
 const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
@@ -70,6 +71,17 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col bg-green-50 text-gray-900 pb-32 relative overflow-hidden">
       
+      {/* BACKGROUND IMAGE */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/bg/living room 2.png"
+          alt=""
+          fill
+          className="object-cover"
+          priority
+        />
+      </div>
+
       {/* TOPBAR */}
       <div className="relative z-[60]"><TopBar pet={petData} /></div>
       
