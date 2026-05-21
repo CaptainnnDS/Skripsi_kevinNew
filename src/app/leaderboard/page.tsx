@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Trophy, RefreshCw } from "lucide-react";
 import { supabase, safeFetch } from "@/lib/supabase";
@@ -18,7 +18,13 @@ export default function LeaderboardPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [petData, setPetData] = useState<any>(null);
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardData | null>(null);
-  const [selectedProfile, setSelectedProfile] = useState<LeaderboardEntry | null>(null);
+  const [selectedProfileIndex, setSelectedProfileIndex] = useState<number | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Derived state: selected profile from index
+  const selectedProfile = selectedProfileIndex !== null && leaderboardData
+    ? leaderboardData.top10[selectedProfileIndex] || null
+    : null;
 
   const loadData = async () => {
     setIsLoading(true);
@@ -66,6 +72,36 @@ export default function LeaderboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Auto-hide toast after 3 seconds
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => setToastMessage(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
+
+  // Handler untuk select profile dari table
+  const handleSelectProfile = useCallback((entry: LeaderboardEntry) => {
+    if (!leaderboardData) return;
+    const index = leaderboardData.top10.findIndex(e => e.userId === entry.userId);
+    setSelectedProfileIndex(index >= 0 ? index : null);
+  }, [leaderboardData]);
+
+  // Navigation handlers
+  const handlePrevProfile = useCallback(() => {
+    if (selectedProfileIndex !== null && selectedProfileIndex > 0) {
+      setSelectedProfileIndex(selectedProfileIndex - 1);
+    }
+  }, [selectedProfileIndex]);
+
+  const handleNextProfile = useCallback(() => {
+    if (selectedProfileIndex !== null && leaderboardData && selectedProfileIndex < leaderboardData.top10.length - 1) {
+      setSelectedProfileIndex(selectedProfileIndex + 1);
+    }
+  }, [selectedProfileIndex, leaderboardData]);
+
+  const hasPrev = selectedProfileIndex !== null && selectedProfileIndex > 0;
+  const hasNext = selectedProfileIndex !== null && leaderboardData !== null && selectedProfileIndex < leaderboardData.top10.length - 1;
   // Loading state
   if (isLoading) {
     return (
@@ -118,7 +154,7 @@ export default function LeaderboardPage() {
             <LeaderboardTable
               entries={leaderboardData.top10}
               currentUserId={userId || ""}
-              onSelect={setSelectedProfile}
+              onSelect={handleSelectProfile}
             />
 
             {/* User Rank Bar */}
@@ -138,13 +174,25 @@ export default function LeaderboardPage() {
 
       <NavigationBar />
 
+      {/* Toast Message */}
+      {toastMessage && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-xl shadow-lg z-50 animate-in fade-in slide-in-from-bottom-4 duration-200">
+          {toastMessage}
+        </div>
+      )}
+
       {/* Profile Popup */}
       {selectedProfile && userId && petData && (
         <ProfilePopup
           entry={selectedProfile}
           currentUserId={userId}
           currentPetName={petData.name || "Gibbey"}
-          onClose={() => setSelectedProfile(null)}
+          onClose={() => setSelectedProfileIndex(null)}
+          onPokeSuccess={setToastMessage}
+          onPrev={handlePrevProfile}
+          onNext={handleNextProfile}
+          hasPrev={hasPrev}
+          hasNext={hasNext}
         />
       )}
     </div>

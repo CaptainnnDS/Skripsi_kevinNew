@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { X, Hand } from "lucide-react";
+import { X, Hand, ChevronLeft, ChevronRight } from "lucide-react";
 import { LeaderboardEntry, sendPoke } from "@/lib/leaderboard";
 import PetCharacter from "@/components/game/PetCharacter";
 
@@ -9,6 +9,12 @@ interface ProfilePopupProps {
   currentUserId: string;
   currentPetName: string;
   onClose: () => void;
+  onPokeSuccess?: (message: string) => void;
+  // Navigasi antar profil
+  onPrev?: () => void;
+  onNext?: () => void;
+  hasPrev?: boolean;
+  hasNext?: boolean;
 }
 
 export default function ProfilePopup({
@@ -16,9 +22,14 @@ export default function ProfilePopup({
   currentUserId,
   currentPetName,
   onClose,
+  onPokeSuccess,
+  onPrev,
+  onNext,
+  hasPrev = false,
+  hasNext = false,
 }: ProfilePopupProps) {
   const [poking, setPoking] = useState(false);
-  const [pokeMessage, setPokeMessage] = useState<string | null>(null);
+  const [pokeError, setPokeError] = useState<string | null>(null);
 
   const isOwnProfile = entry.userId === currentUserId;
 
@@ -26,19 +37,18 @@ export default function ProfilePopup({
     if (isOwnProfile || poking) return;
 
     setPoking(true);
-    setPokeMessage(null);
+    setPokeError(null);
 
     try {
       const result = await sendPoke(currentUserId, entry.userId, currentPetName);
-      setPokeMessage(result.success ? `✅ ${result.message}` : `⏳ ${result.message}`);
-
+      
       if (result.success) {
-        setTimeout(() => {
-          onClose();
-        }, 1500);
+        onPokeSuccess?.(`✅ Berhasil mencolek ${entry.petName}!`);
+      } else {
+        setPokeError(`⏳ ${result.message}`);
       }
     } catch (err: any) {
-      setPokeMessage(`❌ ${err.message || "Gagal mencolek. Coba lagi."}`);
+      setPokeError(`❌ ${err.message || "Gagal mencolek. Coba lagi."}`);
     } finally {
       setPoking(false);
     }
@@ -51,11 +61,11 @@ export default function ProfilePopup({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center"
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-t-3xl w-full max-w-md p-6 animate-in slide-in-from-bottom duration-300 relative"
+        className="bg-white rounded-2xl w-full max-w-md p-6 animate-in zoom-in-95 duration-200 relative max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
@@ -65,6 +75,36 @@ export default function ProfilePopup({
         >
           <X size={20} className="text-gray-500" />
         </button>
+
+        {/* Navigation Buttons */}
+        {hasPrev && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onPrev?.(); }}
+            className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+          >
+            <ChevronLeft size={24} className="text-gray-600" />
+          </button>
+        )}
+        {hasNext && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onNext?.(); }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+          >
+            <ChevronRight size={24} className="text-gray-600" />
+          </button>
+        )}
+
+        {/* Rank Badge */}
+        <div className="flex justify-center mb-2">
+          <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+            entry.rank === 1 ? "bg-yellow-100 text-yellow-700" :
+            entry.rank === 2 ? "bg-gray-100 text-gray-700" :
+            entry.rank === 3 ? "bg-amber-100 text-amber-700" :
+            "bg-blue-100 text-blue-700"
+          }`}>
+            #{entry.rank}
+          </span>
+        </div>
 
         {/* Pet Character */}
         <div className="flex justify-center mb-4">
@@ -88,38 +128,38 @@ export default function ProfilePopup({
         {/* Stats */}
         <div className="flex justify-center gap-4 mb-4">
           <div className="bg-yellow-50 px-4 py-2 rounded-xl border border-yellow-200">
-            <p className="text-xs text-yellow-600">Total Koin</p>
+            <p className="text-xs text-yellow-600 font-medium">Total Koin</p>
             <p className="font-bold text-yellow-700">
               🏅 {entry.totalCoinsEarned.toLocaleString()}
             </p>
           </div>
           <div className="bg-green-50 px-4 py-2 rounded-xl border border-green-200">
-            <p className="text-xs text-green-600">Saldo</p>
+            <p className="text-xs text-green-600 font-medium">Saldo</p>
             <p className="font-bold text-green-700">
               💰 {entry.currentCoins.toLocaleString()}
             </p>
           </div>
         </div>
 
-        {/* Equipment */}
-        <div className="bg-gray-50 rounded-xl p-3 mb-4">
-          <p className="text-xs text-gray-500 mb-2 font-semibold">Perlengkapan:</p>
-          <div className="flex flex-wrap gap-2 text-sm">
-            <span className="bg-white px-3 py-1 rounded-full border">
+        {/* Equipment - Warna lebih terlihat */}
+        <div className="bg-purple-50 rounded-xl p-4 mb-4 border border-purple-200">
+          <p className="text-sm text-purple-700 mb-3 font-bold">🎒 Perlengkapan:</p>
+          <div className="flex flex-wrap gap-2">
+            <span className="bg-white px-3 py-1.5 rounded-lg border-2 border-purple-200 text-sm font-medium text-gray-700">
               🛏️ {entry.equippedBed || "Default"}
             </span>
-            <span className="bg-white px-3 py-1 rounded-full border">
+            <span className="bg-white px-3 py-1.5 rounded-lg border-2 border-purple-200 text-sm font-medium text-gray-700">
               🌙 {entry.equippedNightlight || "Default"}
             </span>
-            <span className="bg-white px-3 py-1 rounded-full border">
+            <span className="bg-white px-3 py-1.5 rounded-lg border-2 border-purple-200 text-sm font-medium text-gray-700">
               🌌 {entry.equippedWallpaper || "Default"}
             </span>
           </div>
         </div>
 
-        {/* Poke Message */}
-        {pokeMessage && (
-          <p className="text-center text-sm mb-3">{pokeMessage}</p>
+        {/* Poke Error Message */}
+        {pokeError && (
+          <p className="text-center text-sm mb-3 text-orange-600 font-medium">{pokeError}</p>
         )}
 
         {/* Poke Button */}
