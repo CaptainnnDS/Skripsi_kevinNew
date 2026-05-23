@@ -5,7 +5,6 @@ import { supabase } from "@/lib/supabase";
 import { checkMateriAccess, recordMateriReview } from "@/lib/quiz";
 import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
-import RoomNavigation from "@/components/game/RoomNavigation";
 import PdfViewer from "@/components/learn/PdfViewer";
 import MateriQuizHistory, { type MateriAttempt } from "@/components/quiz/MateriQuizHistory";
 import { ArrowLeft, Loader2, Target } from "lucide-react";
@@ -162,7 +161,6 @@ export default function LearnDetail() {
     return (
       <main className="flex min-h-screen flex-col bg-blue-50 text-gray-900 pb-24 relative overflow-hidden">
         <TopBar pet={petData} />
-        <RoomNavigation />
 
         <div className="flex-1 flex flex-col items-center justify-center px-16 py-4 relative z-10">
           <div className="bg-white p-8 rounded-2xl shadow-md border-2 border-red-100 text-center max-w-md w-full">
@@ -186,7 +184,6 @@ export default function LearnDetail() {
   return (
     <main className="flex min-h-screen flex-col bg-blue-50 text-gray-900 pb-24 relative overflow-hidden">
       <TopBar pet={petData} />
-      <RoomNavigation />
 
       <div className="flex-1 flex flex-col px-16 py-4 relative z-10">
         {/* Back button + Materi info */}

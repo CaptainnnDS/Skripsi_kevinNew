@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase, safeFetch } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
-import RoomNavigation from "@/components/game/RoomNavigation";
+import NavigationBar from "@/components/game/NavigationBar";
 import PetCharacter from "@/components/game/PetCharacter"; 
 import Image from "next/image";
 import { Droplets, ChevronLeft, ChevronRight, X } from "lucide-react"; 
@@ -222,7 +222,7 @@ export default function BathRoom() {
   if (isAuthLoading || !petData) return <div className="min-h-screen bg-white"></div>;
 
   return (
-    <main className="flex min-h-screen flex-col bg-white text-gray-900 pb-32 relative overflow-hidden">
+    <main className="flex min-h-screen flex-col bg-white text-gray-900 pb-48 relative overflow-hidden">
       
       {/* BACKGROUND IMAGE */}
       <div className="absolute inset-0 z-0">
@@ -271,8 +271,6 @@ export default function BathRoom() {
 
       <div className="relative z-[60]"><TopBar pet={petData} /></div>
       
-      {!showRack && <div className="relative z-50"><RoomNavigation /></div>}
-      
       <div className="flex-1 flex flex-col items-center justify-center p-6 relative z-10 w-full max-w-lg mx-auto">
         {!showRack && <h1 className={`text-4xl font-extrabold text-cyan-950 mb-8 drop-shadow-sm ${funFont.className}`}>Bathroom</h1>}
 
@@ -300,37 +298,73 @@ export default function BathRoom() {
       </div>
 
       {!showRack && (
-        <div className={`fixed bottom-0 left-0 w-full h-28 bg-white/95 border-t-4 border-cyan-200 z-[70] flex items-center justify-between px-4 sm:px-8 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] ${funFont.className}`}>
-            
-            <button onClick={() => petData.is_sleeping ? alert("Lagi tidur woy!") : setShowRack(true)} className={`flex flex-col items-center gap-1 group w-16 ${petData.is_sleeping ? 'opacity-40 cursor-not-allowed grayscale' : ''}`}>
-                <div className="bg-pink-50 p-3 rounded-2xl border-2 border-pink-200 group-hover:scale-110 transition-transform"><Droplets size={32} className="text-pink-600" /></div>
-                <span className="text-xs font-bold text-pink-700">SOAPS</span>
+        <div className={`fixed bottom-20 left-0 w-full z-[70] px-4 pb-3 ${funFont.className}`}>
+          <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.08)] border border-cyan-100 p-2.5 flex items-center gap-2">
+
+            {/* SOAPS Button */}
+            <button
+              onClick={() => petData.is_sleeping ? alert("Lagi tidur woy!") : setShowRack(true)}
+              className={`flex-shrink-0 flex flex-col items-center justify-center gap-0.5 w-14 h-14 rounded-xl bg-gradient-to-br from-pink-400 to-rose-500 text-white shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all ${petData.is_sleeping ? 'opacity-40 grayscale cursor-not-allowed pointer-events-none' : ''}`}
+            >
+              <Droplets size={20} strokeWidth={2.5} />
+              <span className="text-[9px] font-extrabold tracking-wider leading-none">SOAPS</span>
             </button>
 
-            <div className={`flex-1 max-w-[280px] mx-4 flex items-center justify-between bg-cyan-50/80 rounded-[2rem] border-2 border-cyan-200 px-2 py-2 ${petData.is_sleeping ? 'opacity-40 grayscale pointer-events-none' : ''}`}>
-                <button onClick={prevSoap} className="p-2 text-cyan-600 hover:bg-cyan-200 rounded-full"><ChevronLeft size={28} /></button>
-                <div className="flex flex-col items-center flex-1">
-                    {activeSoapIndexLower !== null && inventory.length > 0 ? (() => {
-                        const item = inventory[activeSoapIndexLower];
-                        return (
-                            <>
-                                <div draggable={item.count > 0 && !petData.is_sleeping} onDragStart={(e) => handleDragStart(e, "soap")} className={`p-2 rounded-full transition-transform ${item.count > 0 && !petData.is_sleeping ? 'cursor-grab active:cursor-grabbing hover:scale-125 hover:-translate-y-2' : 'opacity-50 grayscale'}`}>
-                                    <ItemEmoji iconName={item.icon_name} size={48} />
-                                </div>
-                                <span className="text-sm font-extrabold text-cyan-900 mt-[-4px]">x{item.count}</span>
-                            </>
-                        );
-                    })() : <span className="font-bold text-gray-400 text-sm mt-2 text-center">Beli<br/>Sabun</span>}
-                </div>
-                <button onClick={nextSoap} className="p-2 text-cyan-600 hover:bg-cyan-200 rounded-full"><ChevronRight size={28} /></button>
+            {/* Soap Selector */}
+            <div className={`flex-1 h-14 flex items-center bg-cyan-50 rounded-xl border border-cyan-100 px-1 ${petData.is_sleeping ? 'opacity-40 grayscale pointer-events-none' : ''}`}>
+              <button
+                onClick={prevSoap}
+                disabled={inventory.length <= 1}
+                className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-cyan-600 hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+              >
+                <ChevronLeft size={18} strokeWidth={2.5} />
+              </button>
+
+              <div className="flex-1 flex items-center justify-center gap-2 px-1">
+                {activeSoapIndexLower !== null && inventory.length > 0 ? (() => {
+                  const item = inventory[activeSoapIndexLower];
+                  return (
+                    <>
+                      <div
+                        draggable={item.count > 0 && !petData.is_sleeping}
+                        onDragStart={(e) => handleDragStart(e, "soap")}
+                        className={`flex-shrink-0 flex items-center justify-center transition-transform ${item.count > 0 && !petData.is_sleeping ? 'cursor-grab active:cursor-grabbing hover:scale-110' : 'opacity-50 grayscale'}`}
+                        title={item.name}
+                      >
+                        <ItemEmoji iconName={item.icon_name} size={28} />
+                      </div>
+                      <div className="flex flex-col items-start leading-tight min-w-0">
+                        <span className="text-[10px] font-bold text-cyan-700 truncate max-w-[100px]">{item.name}</span>
+                        <span className="text-[10px] font-extrabold text-cyan-900">×{item.count}</span>
+                      </div>
+                    </>
+                  );
+                })() : (
+                  <span className="text-[11px] font-bold text-gray-400 text-center">Beli sabun di Shop</span>
+                )}
+              </div>
+
+              <button
+                onClick={nextSoap}
+                disabled={inventory.length <= 1}
+                className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-cyan-600 hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+              >
+                <ChevronRight size={18} strokeWidth={2.5} />
+              </button>
             </div>
 
-            <div className={`flex flex-col items-center group relative w-16 ${petData.is_sleeping ? 'opacity-40 grayscale pointer-events-none' : ''}`}>
-                <div draggable={!petData.is_sleeping} onDragStart={(e) => handleDragStart(e, "shower")} onDragEnd={handleDragEnd} className="bg-blue-50 p-2 rounded-2xl border-2 border-blue-200 cursor-grab active:cursor-grabbing hover:scale-110 transition-all flex items-center justify-center w-14 h-14">
-                    <span className="text-4xl transform -scale-x-100">🚿</span>
-                </div>
-                <span className="text-xs font-bold text-blue-700 mt-1">RINSE</span>
+            {/* RINSE - draggable shower */}
+            <div
+              draggable={!petData.is_sleeping}
+              onDragStart={(e) => handleDragStart(e, "shower")}
+              onDragEnd={handleDragEnd}
+              className={`flex-shrink-0 flex flex-col items-center justify-center gap-0.5 w-14 h-14 rounded-xl bg-gradient-to-br from-blue-400 to-blue-500 text-white shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all ${petData.is_sleeping ? 'opacity-40 grayscale cursor-not-allowed pointer-events-none' : 'cursor-grab active:cursor-grabbing'}`}
+              title="Drag untuk membilas"
+            >
+              <span className="text-xl transform -scale-x-100 leading-none">🚿</span>
+              <span className="text-[9px] font-extrabold tracking-wider leading-none">RINSE</span>
             </div>
+          </div>
         </div>
       )}
 
@@ -362,6 +396,8 @@ export default function BathRoom() {
       {petData.is_sleeping && (
         <div className="fixed inset-0 bg-black/60 z-[65] cursor-not-allowed transition-opacity duration-1000" onClick={() => alert("Ssst! Panda lagi tidur pulas.")}></div>
       )}
+
+      <NavigationBar />
     </main>
   );
 }

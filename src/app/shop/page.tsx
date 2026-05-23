@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { supabase, safeFetch } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
-import RoomNavigation from "@/components/game/RoomNavigation";
 import { Pizza, FlaskConical, Droplets, Shirt, Bed, Palette, ArrowLeft, Store, Coins, CheckCircle, Lightbulb, Image as ImageIcon } from "lucide-react"; 
 import { Fredoka } from "next/font/google";
 
@@ -177,7 +176,6 @@ export default function Shop() {
   return (
     <main className="fixed inset-0 flex flex-col bg-blue-50 text-gray-900 pb-24">
       <TopBar pet={petData} />
-      {!activeCategory && <RoomNavigation />}
       {popupMsg && (
         <div className={`absolute top-24 left-1/2 -translate-x-1/2 z-[200] bg-green-500 text-white px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 animate-bounce ${funFont.className}`}>
           <CheckCircle size={20} /> {popupMsg}

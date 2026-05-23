@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
-import RoomNavigation from "@/components/game/RoomNavigation";
 import { BookOpen, ChevronRight, Lock, CheckCircle2 } from "lucide-react";
 import { PASS_THRESHOLD } from "@/lib/quiz";
 import { Fredoka } from "next/font/google";
@@ -156,7 +155,6 @@ export default function Learn() {
   return (
     <main className="flex min-h-screen flex-col bg-blue-50 text-gray-900 pb-24 relative overflow-hidden">
       <TopBar pet={petData} />
-      <RoomNavigation />
 
       <div className="flex-1 flex flex-col px-16 py-4 relative z-10">
         {/* Header */}

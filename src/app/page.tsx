@@ -3,7 +3,6 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase, safeFetch } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
-import RoomNavigation from "@/components/game/RoomNavigation";
 import PetCharacter from "@/components/game/PetCharacter"; 
 import NavigationBar from "@/components/game/NavigationBar";
 import NetworkError from "@/components/NetworkError";
@@ -77,7 +76,7 @@ export default function Home() {
 
   return (
     <>
-    <main className="flex min-h-screen flex-col bg-green-50 text-gray-900 pb-32 relative overflow-hidden">
+    <main className="fixed inset-0 flex flex-col bg-green-50 text-gray-900 overflow-hidden">
       
       {/* BACKGROUND IMAGE */}
       <div className="absolute inset-0 z-0">
@@ -92,23 +91,43 @@ export default function Home() {
 
       {/* TOPBAR */}
       <div className="relative z-[60]"><TopBar pet={petData} /></div>
-      
-      {/* ROOM NAVIGATION */}
-      <div className="relative z-50">
-        <RoomNavigation />
-      </div>
-      
-      {/* KONTEN TENGAH (PANDA) */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 relative z-10 w-full max-w-lg mx-auto">
-        <h1 className={`text-4xl font-extrabold mb-8 drop-shadow-sm text-green-950 ${funFont.className}`}>
+
+      {/* KONTEN TENGAH — flex-1 agar mengisi sisa ruang antara TopBar dan NavigationBar */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 relative z-10 w-full max-w-lg mx-auto overflow-hidden">
+        <h1 className={`text-3xl font-extrabold mb-4 drop-shadow-sm text-green-950 ${funFont.className}`}>
           Living Room
         </h1>
         
-        <div className="relative flex flex-col items-center justify-center w-64 h-64 mb-12">
+        <div className="relative flex flex-col items-center justify-center w-52 h-52 mb-4">
            <PetCharacter 
              petData={petData} 
              petMood="happy" 
            />
+        </div>
+
+        {/* Room Cards */}
+        <div className="grid grid-cols-3 gap-3 w-full max-w-sm mb-4">
+          <button
+            onClick={() => router.push("/bedroom")}
+            className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-gradient-to-br from-indigo-400 to-purple-400 text-white shadow-lg hover:scale-105 active:scale-95 transition-transform"
+          >
+            <span className="text-2xl">🛏️</span>
+            <span className="text-[11px] font-bold tracking-wide">Bedroom</span>
+          </button>
+          <button
+            onClick={() => router.push("/bathroom")}
+            className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-400 text-white shadow-lg hover:scale-105 active:scale-95 transition-transform"
+          >
+            <span className="text-2xl">🛁</span>
+            <span className="text-[11px] font-bold tracking-wide">Bathroom</span>
+          </button>
+          <button
+            onClick={() => router.push("/kitchen")}
+            className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-gradient-to-br from-orange-400 to-red-400 text-white shadow-lg hover:scale-105 active:scale-95 transition-transform"
+          >
+            <span className="text-2xl">🍳</span>
+            <span className="text-[11px] font-bold tracking-wide">Kitchen</span>
+          </button>
         </div>
 
         {/* Daily Check-in */}
@@ -126,10 +145,8 @@ export default function Home() {
         )}
       </div>
 
-      {/* NAVBAR BAWAH DIMASUKIN LAGI */}
-      <div className="relative z-[70]">
-        <NavigationBar />
-      </div>
+      {/* NAVBAR */}
+      <NavigationBar />
 
     </main>
 

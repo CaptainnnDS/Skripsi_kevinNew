@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase, safeFetch } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
-import RoomNavigation from "@/components/game/RoomNavigation";
+import NavigationBar from "@/components/game/NavigationBar";
 import PetCharacter from "@/components/game/PetCharacter"; 
 import Image from "next/image";
 import { Refrigerator, ChevronLeft, ChevronRight, Store, X } from "lucide-react"; 
@@ -111,7 +111,7 @@ export default function Kitchen() {
   if (isAuthLoading || !petData) return <div className="min-h-screen bg-orange-50"></div>;
 
   return (
-    <main className="flex min-h-screen flex-col bg-orange-50 text-gray-900 pb-32 relative overflow-hidden">
+    <main className="flex min-h-screen flex-col bg-orange-50 text-gray-900 pb-48 relative overflow-hidden">
       {/* BACKGROUND IMAGE */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -124,8 +124,6 @@ export default function Kitchen() {
       </div>
 
       <div className="relative z-[60]"><TopBar pet={petData} /></div>
-      
-      {!showFridge && <RoomNavigation />}
       
       <div className="flex-1 flex flex-col items-center justify-center p-6 relative z-10 w-full max-w-lg mx-auto">
         {!showFridge && (
@@ -141,37 +139,67 @@ export default function Kitchen() {
 
       {/* NAVBAR BAWAH KITCHEN */}
       {!showFridge && (
-        <div className={`fixed bottom-0 left-0 w-full h-28 bg-white/95 border-t-4 border-orange-200 z-[70] flex items-center justify-between px-4 sm:px-8 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] ${funFont.className}`}>
-            <button 
-              onClick={() => petData.is_sleeping ? alert("Panda lagi tidur! Bangunin di Bedroom dulu.") : setShowFridge(true)} 
-              className={`flex flex-col items-center gap-1 group w-16 ${petData.is_sleeping ? 'opacity-40 cursor-not-allowed grayscale' : ''}`}
+        <div className={`fixed bottom-20 left-0 w-full z-[70] px-4 pb-3 ${funFont.className}`}>
+          <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.08)] border border-orange-100 p-2.5 flex items-center gap-2">
+
+            {/* FRIDGE Button */}
+            <button
+              onClick={() => petData.is_sleeping ? alert("Panda lagi tidur! Bangunin di Bedroom dulu.") : setShowFridge(true)}
+              className={`flex-shrink-0 flex flex-col items-center justify-center gap-0.5 w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-400 to-cyan-500 text-white shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all ${petData.is_sleeping ? 'opacity-40 grayscale cursor-not-allowed pointer-events-none' : ''}`}
             >
-                <div className="bg-cyan-50 p-3 rounded-2xl border-2 border-cyan-200 group-hover:scale-110 transition-transform"><Refrigerator size={32} className="text-cyan-600" /></div>
-                <span className="text-xs font-bold text-cyan-700">FRIDGE</span>
+              <Refrigerator size={20} strokeWidth={2.5} />
+              <span className="text-[9px] font-extrabold tracking-wider leading-none">FRIDGE</span>
             </button>
 
-            <div className={`flex-1 max-w-[280px] mx-4 flex items-center justify-between bg-orange-50/80 rounded-[2rem] border-2 border-orange-200 px-2 py-2 ${petData.is_sleeping ? 'opacity-40 grayscale pointer-events-none' : ''}`}>
-                <button onClick={prevFoodLower} className="p-2 text-orange-600 hover:bg-orange-200 rounded-full"><ChevronLeft size={28} /></button>
-                <div className="flex flex-col items-center flex-1">
-                    {activeFoodIndexLower !== null && inventory.length > 0 ? (() => {
-                        const item = inventory[activeFoodIndexLower];
-                        return (
-                            <>
-                                <div draggable={item.count > 0 && !petData.is_sleeping} onDragStart={handleDragStart} className={`p-2 rounded-full transition-transform ${item.count > 0 && !petData.is_sleeping ? 'cursor-grab active:cursor-grabbing hover:scale-125 hover:-translate-y-2' : 'opacity-50 grayscale'}`}>
-                                    <ItemEmoji iconName={item.icon_name} size={56} />
-                                </div>
-                                <span className="text-sm font-extrabold text-orange-900 mt-[-8px]">x{item.count}</span>
-                            </>
-                        );
-                    })() : <span className="font-bold text-gray-400">Kosong</span>}
-                </div>
-                <button onClick={nextFoodLower} className="p-2 text-orange-600 hover:bg-orange-200 rounded-full"><ChevronRight size={28} /></button>
+            {/* Food Selector */}
+            <div className={`flex-1 h-14 flex items-center bg-orange-50 rounded-xl border border-orange-100 px-1 ${petData.is_sleeping ? 'opacity-40 grayscale pointer-events-none' : ''}`}>
+              <button
+                onClick={prevFoodLower}
+                disabled={inventory.length <= 1}
+                className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-orange-600 hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+              >
+                <ChevronLeft size={18} strokeWidth={2.5} />
+              </button>
+
+              <div className="flex-1 flex items-center justify-center gap-2 px-1">
+                {activeFoodIndexLower !== null && inventory.length > 0 ? (() => {
+                  const item = inventory[activeFoodIndexLower];
+                  return (
+                    <>
+                      <div
+                        draggable={item.count > 0 && !petData.is_sleeping}
+                        onDragStart={handleDragStart}
+                        className={`flex-shrink-0 flex items-center justify-center transition-transform ${item.count > 0 && !petData.is_sleeping ? 'cursor-grab active:cursor-grabbing hover:scale-110' : 'opacity-50 grayscale'}`}
+                        title={item.name}
+                      >
+                        <ItemEmoji iconName={item.icon_name} size={28} />
+                      </div>
+                      <div className="flex flex-col items-start leading-tight min-w-0">
+                        <span className="text-[10px] font-bold text-orange-700 truncate max-w-[100px]">{item.name}</span>
+                        <span className="text-[10px] font-extrabold text-orange-900">×{item.count}</span>
+                      </div>
+                    </>
+                  );
+                })() : (
+                  <span className="text-[11px] font-bold text-gray-400">Kosong</span>
+                )}
+              </div>
+
+              <button
+                onClick={nextFoodLower}
+                disabled={inventory.length <= 1}
+                className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-orange-600 hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+              >
+                <ChevronRight size={18} strokeWidth={2.5} />
+              </button>
             </div>
 
-            <button onClick={() => router.push('/shop')} className="flex flex-col items-center gap-1 group w-16">
-                <div className="bg-purple-50 p-3 rounded-2xl border-2 border-purple-200 group-hover:scale-110 transition-transform"><Store size={32} className="text-purple-600" /></div>
-                <span className="text-xs font-bold text-purple-700">SHOP</span>
-            </button>
+            {/* Hint icon: drag to feed */}
+            <div className="hidden sm:flex flex-shrink-0 flex-col items-center justify-center gap-0.5 w-14 h-14 text-gray-400">
+              <span className="text-xl leading-none">🐾</span>
+              <span className="text-[8px] font-bold tracking-wide leading-none text-center">DRAG ME</span>
+            </div>
+          </div>
         </div>
       )}
 
@@ -215,6 +243,8 @@ export default function Kitchen() {
           onClick={() => alert("Ssst! Panda lagi tidur pulas buat ngisi energi. Nyalain lampu di Bedroom dulu gih.")}
         ></div>
       )}
+
+      <NavigationBar />
     </main>
   );
 }

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase, safeFetch } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
-import RoomNavigation from "@/components/game/RoomNavigation";
+import NavigationBar from "@/components/game/NavigationBar";
 import PetCharacter from "@/components/game/PetCharacter"; 
 import { X, CheckCircle } from "lucide-react"; 
 import { Fredoka } from "next/font/google";
@@ -175,7 +175,7 @@ export default function Bedroom() {
   const isSpace = petData.equipped_wallpaper === 'ThemeSpace';
 
   return (
-    <main className={`flex min-h-screen flex-col transition-all duration-1000 relative overflow-hidden ${isLightOn ? '' : currentLight.glow}`} 
+    <main className={`flex min-h-screen flex-col transition-all duration-1000 relative overflow-hidden pb-48 ${isLightOn ? '' : currentLight.glow}`} 
           style={{ backgroundColor: isLightOn && !isSpace ? (petData.equipped_wallpaper?.startsWith('#') ? petData.equipped_wallpaper : '#EEF2FF') : '' }}>
       
       <style dangerouslySetInnerHTML={{__html: `@keyframes squishSoft { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.97); } } .anim-squish { animation: squishSoft 3s infinite ease-in-out; transform-origin: bottom center; }`}} />
@@ -184,7 +184,6 @@ export default function Bedroom() {
       
       <div className="flex-1 relative flex items-center justify-center">
         {isSpace && <SpaceThemeLayer isDark={!isLightOn} />}
-        {isLightOn && !showCloset && <RoomNavigation />}
         <div className="relative z-10 flex flex-col items-center justify-center">
           <h1 className={`text-4xl font-extrabold mb-12 drop-shadow-sm transition-all duration-1000 ${isLightOn ? 'text-indigo-950' : 'text-white opacity-20'} ${funFont.className}`}>Bedroom</h1>
           <div className="relative w-80 h-80 flex items-center justify-center">
@@ -202,21 +201,65 @@ export default function Bedroom() {
       </div>
 
       {!showCloset && (
-        <div className={`fixed bottom-0 left-0 w-full h-24 border-t-2 z-[70] flex items-center px-8 transition-all duration-1000 ${isLightOn ? 'bg-white/80 border-indigo-100 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]' : 'bg-slate-950/90 border-slate-800'}`}>
-          <button onClick={() => isLightOn ? setShowCloset(true) : alert("Nyalain lampu dulu!")} className="flex-1 flex flex-col items-center gap-1 group">
-            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border-2 transition-all group-hover:scale-110 ${isLightOn ? 'bg-blue-50 border-blue-100' : 'bg-slate-900 border-slate-800 opacity-40'}`}><span className="text-2xl">🚪</span></div>
-            <span className={`text-[9px] font-black tracking-widest ${isLightOn ? 'text-blue-500' : 'text-slate-600'}`}>CLOSET</span>
-          </button>
-          <button onClick={toggleSleep} className="flex-1 flex flex-col items-center -translate-y-10">
-            <div className={`w-20 h-20 rounded-full flex items-center justify-center border-[6px] shadow-2xl transition-all duration-500 hover:scale-110 active:scale-95 ${isLightOn ? 'bg-yellow-400 border-white shadow-yellow-200' : 'bg-slate-800 border-slate-700 shadow-blue-900/50'}`}>
-              <span className={`text-4xl transition-all ${!isLightOn ? 'brightness-75' : ''}`}>{currentLight.btnIcon}</span>
+        <div className="fixed bottom-20 left-0 w-full z-[70] px-4 pb-3">
+          <div className={`max-w-lg mx-auto rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.08)] border p-2.5 flex items-center gap-2 transition-all duration-700 ${
+            isLightOn
+              ? 'bg-white border-indigo-100'
+              : 'bg-slate-900/95 border-slate-700'
+          }`}>
+
+            {/* CLOSET Button */}
+            <button
+              onClick={() => isLightOn ? setShowCloset(true) : alert("Nyalain lampu dulu!")}
+              className={`flex-shrink-0 flex flex-col items-center justify-center gap-0.5 w-14 h-14 rounded-xl shadow-md transition-all ${
+                isLightOn
+                  ? 'bg-gradient-to-br from-indigo-400 to-purple-500 text-white hover:shadow-lg hover:scale-105 active:scale-95'
+                  : 'bg-slate-800 text-slate-600 cursor-not-allowed opacity-50'
+              }`}
+              disabled={!isLightOn}
+            >
+              <span className="text-xl leading-none">🚪</span>
+              <span className="text-[9px] font-extrabold tracking-wider leading-none">CLOSET</span>
+            </button>
+
+            {/* Status / Info Center */}
+            <div className={`flex-1 h-14 flex flex-col items-center justify-center rounded-xl border px-3 ${
+              isLightOn
+                ? 'bg-yellow-50 border-yellow-100'
+                : 'bg-slate-800/60 border-slate-700'
+            }`}>
+              <span className={`text-[10px] font-extrabold tracking-widest leading-none mb-1 ${
+                isLightOn ? 'text-yellow-600' : 'text-blue-300'
+              }`}>
+                {isLightOn ? '☀️ AWAKE' : '🌙 SLEEPING'}
+              </span>
+              <span className={`text-[10px] font-medium leading-none ${
+                isLightOn ? 'text-gray-600' : 'text-slate-400'
+              }`}>
+                {petData.is_sleeping ? 'Lampu off untuk istirahat' : 'Tap tombol untuk tidur'}
+              </span>
             </div>
-            <span className={`text-[10px] font-black mt-2 tracking-widest ${isLightOn ? 'text-yellow-600' : 'text-slate-500'}`}>{isLightOn ? 'ON' : 'OFF'}</span>
-          </button>
-          <button onClick={() => isLightOn ? router.push('/shop') : alert("Nyalain lampu dulu!")} className="flex-1 flex flex-col items-center gap-1 group">
-            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border-2 transition-all group-hover:scale-110 ${isLightOn ? 'bg-purple-50 border-purple-100' : 'bg-slate-900 border-slate-800 opacity-40'}`}><span className="text-2xl">🏪</span></div>
-            <span className={`text-[9px] font-black tracking-widest ${isLightOn ? 'text-purple-500' : 'text-gray-500'}`}>SHOP</span>
-          </button>
+
+            {/* Light Toggle */}
+            <button
+              onClick={toggleSleep}
+              className={`flex-shrink-0 flex flex-col items-center justify-center w-14 h-14 rounded-xl shadow-md transition-all hover:scale-105 active:scale-95 ${
+                isLightOn
+                  ? 'bg-gradient-to-br from-yellow-300 to-amber-400 shadow-yellow-200'
+                  : 'bg-gradient-to-br from-slate-700 to-slate-800 shadow-blue-900/30 ring-2 ring-blue-400/30'
+              }`}
+              title={isLightOn ? 'Matikan lampu' : 'Nyalakan lampu'}
+            >
+              <span className={`text-2xl leading-none transition-transform ${!isLightOn ? 'brightness-110' : ''}`}>
+                {currentLight.btnIcon}
+              </span>
+              <span className={`text-[9px] font-extrabold tracking-wider mt-0.5 leading-none ${
+                isLightOn ? 'text-amber-900' : 'text-blue-300'
+              }`}>
+                {isLightOn ? 'ON' : 'OFF'}
+              </span>
+            </button>
+          </div>
         </div>
       )}
 
@@ -242,6 +285,8 @@ export default function Bedroom() {
           </div>
         </div>
       )}
+
+      <NavigationBar />
     </main>
   );
 }
