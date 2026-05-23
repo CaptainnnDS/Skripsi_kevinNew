@@ -1,4 +1,5 @@
 import { supabase, safeFetch } from "./supabase";
+import { calculateLevelFromXp } from "./xp";
 
 export interface LeaderboardEntry {
   rank: number;
@@ -10,6 +11,7 @@ export interface LeaderboardEntry {
   equippedBed: string | null;
   equippedNightlight: string | null;
   equippedWallpaper: string | null;
+  level: number;
 }
 
 export interface LeaderboardData {
@@ -37,7 +39,23 @@ export async function getLeaderboard(userId: string): Promise<LeaderboardData> {
     return { top10: [], userEntry: null, totalPlayers: 0 };
   }
 
-  const entries: LeaderboardEntry[] = pets.map((pet, index) => ({
+  // Fetch XP data for all users (untuk level badge)
+  const userIds = pets.map((p: any) => p.user_id);
+  const { data: xpData } = await safeFetch(
+    supabase
+      .from("user_xp")
+      .select("user_id, total_xp, current_level")
+      .in("user_id", userIds)
+  );
+
+  const xpMap = new Map<string, number>();
+  if (xpData) {
+    for (const row of xpData) {
+      xpMap.set(row.user_id, row.current_level || 1);
+    }
+  }
+
+  const entries: LeaderboardEntry[] = pets.map((pet: any, index: number) => ({
     rank: index + 1,
     userId: pet.user_id,
     petName: pet.name || "Gibbey",
@@ -47,6 +65,7 @@ export async function getLeaderboard(userId: string): Promise<LeaderboardData> {
     equippedBed: pet.equipped_bed,
     equippedNightlight: pet.equipped_nightlight,
     equippedWallpaper: pet.equipped_wallpaper,
+    level: xpMap.get(pet.user_id) || 1,
   }));
 
   const top10 = entries.slice(0, 10);

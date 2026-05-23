@@ -1,8 +1,11 @@
 "use client";
-import { User, Utensils, Zap, Heart, Droplets, LogOut, Bell, Check } from "lucide-react";
+import { User, Utensils, Zap, Heart, Droplets, LogOut, Bell, Check, CalendarCheck } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { getUserXp, UserXp } from "@/lib/xp";
+import LevelBadge from "@/components/xp/LevelBadge";
+import CheckinPopup from "@/components/checkin/CheckinPopup";
 import {
   getUnreadNotificationCount,
   getNotifications,
@@ -21,6 +24,8 @@ export default function TopBar({ pet }: { pet: any }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const [userXp, setUserXp] = useState<UserXp | null>(null);
+  const [showCheckin, setShowCheckin] = useState(false);
   const router = useRouter();
 
   // Fetch user info
@@ -31,6 +36,13 @@ export default function TopBar({ pet }: { pet: any }) {
         if (user) {
           setUserEmail(user.email || "User");
           setUserId(user.id);
+          // Fetch XP data
+          try {
+            const xp = await getUserXp(user.id);
+            setUserXp(xp);
+          } catch {
+            // Tabel belum ada, skip
+          }
         }
       } catch {
         setUserEmail("User");
@@ -219,6 +231,20 @@ export default function TopBar({ pet }: { pet: any }) {
         <div className="bg-yellow-100 px-5 py-2.5 rounded-2xl border-2 border-yellow-400 flex items-center shadow-sm">
           <span className="text-yellow-600 font-extrabold text-lg">💰 {currentPet.coins}</span>
         </div>
+
+        {/* Level Badge */}
+        {userXp && (
+          <LevelBadge level={userXp.currentLevel} size="md" />
+        )}
+
+        {/* Check-in Button */}
+        <button
+          onClick={() => { setShowCheckin(true); setShowDropdown(false); setShowNotifications(false); }}
+          className="bg-green-100 hover:bg-green-200 transition-colors p-2.5 rounded-full text-green-600"
+          title="Daily Check-in"
+        >
+          <CalendarCheck size={22} />
+        </button>
       </div>
 
       {/* KANAN: 4 Kotak Status Bar */}
@@ -236,7 +262,21 @@ export default function TopBar({ pet }: { pet: any }) {
           <Droplets size={18} /> <span>{currentPet.cleanliness}%</span>
         </div>
       </div>
-      
+
+      {/* Check-in Popup */}
+      {showCheckin && userId && (
+        <CheckinPopup
+          userId={userId}
+          onClose={() => setShowCheckin(false)}
+          onXpGained={async () => {
+            // Refresh XP data
+            try {
+              const xp = await getUserXp(userId);
+              setUserXp(xp);
+            } catch {}
+          }}
+        />
+      )}
     </nav>
   );
 }

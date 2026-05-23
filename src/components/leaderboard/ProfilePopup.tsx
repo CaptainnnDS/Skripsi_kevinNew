@@ -1,8 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Hand, ChevronLeft, ChevronRight } from "lucide-react";
 import { LeaderboardEntry, sendPoke } from "@/lib/leaderboard";
+import { getUserXp, UserXp, getBadgeFromLevel, getXpProgress } from "@/lib/xp";
 import PetCharacter from "@/components/game/PetCharacter";
+import LevelBadge from "@/components/xp/LevelBadge";
+import XpProgressBar from "@/components/xp/XpProgressBar";
 
 interface ProfilePopupProps {
   entry: LeaderboardEntry;
@@ -30,8 +33,22 @@ export default function ProfilePopup({
 }: ProfilePopupProps) {
   const [poking, setPoking] = useState(false);
   const [pokeError, setPokeError] = useState<string | null>(null);
+  const [xpData, setXpData] = useState<UserXp | null>(null);
 
   const isOwnProfile = entry.userId === currentUserId;
+
+  // Fetch XP data for this profile
+  useEffect(() => {
+    const fetchXp = async () => {
+      try {
+        const data = await getUserXp(entry.userId);
+        setXpData(data);
+      } catch {
+        // Tabel belum ada, skip
+      }
+    };
+    fetchXp();
+  }, [entry.userId]);
 
   const handlePoke = async () => {
     if (isOwnProfile || poking) return;
@@ -140,6 +157,24 @@ export default function ProfilePopup({
             </p>
           </div>
         </div>
+
+        {/* Level & XP Progress */}
+        {xpData && (
+          <div className="bg-blue-50 rounded-xl p-4 mb-4 border border-blue-200">
+            <div className="flex items-center justify-between mb-2">
+              <LevelBadge level={xpData.currentLevel} size="md" />
+              <span className="text-xs text-blue-600 font-medium">
+                {getBadgeFromLevel(xpData.currentLevel).icon} {getBadgeFromLevel(xpData.currentLevel).name}
+              </span>
+            </div>
+            <XpProgressBar
+              progress={getXpProgress(xpData.totalXp)}
+              level={xpData.currentLevel}
+              totalXp={xpData.totalXp}
+              compact={true}
+            />
+          </div>
+        )}
 
         {/* Equipment - Warna lebih terlihat */}
         <div className="bg-purple-50 rounded-xl p-4 mb-4 border border-purple-200">

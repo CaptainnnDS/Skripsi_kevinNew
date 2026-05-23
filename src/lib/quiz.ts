@@ -1,6 +1,9 @@
 import { supabase } from "./supabase";
+import { addXp, getQuizXpReward, AddXpResult } from "./xp";
 
 export const PASS_THRESHOLD = 0.7;
+
+const REVIEW_XP = 5;
 
 export interface Question {
   id: number;
@@ -16,6 +19,8 @@ export interface QuizResultData {
   totalQuestions: number;
   rewardCoins: number;
   isPassed: boolean;
+  xpEarned: number;
+  xpResult?: AddXpResult;
 }
 
 /**
@@ -289,10 +294,101 @@ export async function submitQuiz(params: {
     }
   }
 
+  // 7. Hitung & tambah XP berdasarkan persentase skor
+  let xpEarned = 0;
+  let xpResult: AddXpResult | undefined;
+
+  const percentage = (score / questions.length) * 100;
+  const xpReward = getQuizXpReward(percentage);
+
+  // Cek best score - hanya tambah XP jika improve
+  const { data: bestScore } = await supabase
+    .from("quiz_best_score")
+    .select("best_percentage, xp_earned")
+    .eq("user_id", userId)
+    .eq("materi_id", materiId)
+    .maybeSingle();
+
+  const previousXp = bestScore?.xp_earned ?? 0;
+  const previousPercentage = bestScore?.best_percentage ?? 0;
+
+  if (percentage > previousPercentage) {
+    // XP incremental: hanya selisih dari reward sebelumnya
+    xpEarned = xpReward - previousXp;
+
+    if (xpEarned > 0) {
+      xpResult = await addXp(userId, xpEarned);
+    }
+
+    // Update best score
+    await supabase
+      .from("quiz_best_score")
+      .upsert(
+        {
+          user_id: userId,
+          materi_id: materiId,
+          best_score: score,
+          best_percentage: percentage,
+          xp_earned: xpReward,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id,materi_id" }
+      );
+  }
+
   return {
     score,
     totalQuestions: questions.length,
     rewardCoins,
     isPassed,
+    xpEarned,
+    xpResult,
   };
+}
+
+
+/**
+ * Record review materi dan berikan XP (max 1x per materi per hari).
+ */
+export async function recordMateriReview(
+  userId: string,
+  materiId: number
+): Promise<{ xpEarned: number; xpResult?: AddXpResult; alreadyReviewed: boolean }> {
+  const today = new Date().toISOString().split("T")[0];
+
+  // Cek apakah sudah review hari ini
+  const { data: existing } = await supabase
+    .from("materi_review")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("materi_id", materiId)
+    .eq("review_date", today)
+    .maybeSingle();
+
+  if (existing) {
+    return { xpEarned: 0, alreadyReviewed: true };
+  }
+
+  // Insert review record
+  const { error } = await supabase
+    .from("materi_review")
+    .insert({
+      user_id: userId,
+      materi_id: materiId,
+      review_date: today,
+      xp_earned: REVIEW_XP,
+    });
+
+  if (error) {
+    // Jika tabel belum ada, skip tanpa error
+    if (error.message.includes("does not exist")) {
+      return { xpEarned: 0, alreadyReviewed: false };
+    }
+    throw new Error(`Gagal record review: ${error.message}`);
+  }
+
+  // Tambah XP
+  const xpResult = await addXp(userId, REVIEW_XP);
+
+  return { xpEarned: REVIEW_XP, xpResult, alreadyReviewed: false };
 }

@@ -1,6 +1,7 @@
 "use client";
 import { LeaderboardEntry } from "@/lib/leaderboard";
 import { Trophy, Medal, Award } from "lucide-react";
+import LevelBadge from "@/components/xp/LevelBadge";
 
 interface LeaderboardTableProps {
   entries: LeaderboardEntry[];
@@ -74,12 +75,15 @@ export default function LeaderboardTable({
 
             {/* Name */}
             <div className="flex-1 text-left">
-              <p className="font-bold text-gray-800">
-                {entry.petName}
-                {isCurrentUser && (
-                  <span className="ml-2 text-xs text-blue-500">(Kamu)</span>
-                )}
-              </p>
+              <div className="flex items-center gap-1.5">
+                <p className="font-bold text-gray-800">
+                  {entry.petName}
+                  {isCurrentUser && (
+                    <span className="ml-2 text-xs text-blue-500">(Kamu)</span>
+                  )}
+                </p>
+                <LevelBadge level={entry.level} size="sm" showLabel={true} />
+              </div>
             </div>
 
             {/* Total Coins */}

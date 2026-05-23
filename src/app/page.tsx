@@ -7,6 +7,8 @@ import RoomNavigation from "@/components/game/RoomNavigation";
 import PetCharacter from "@/components/game/PetCharacter"; 
 import NavigationBar from "@/components/game/NavigationBar";
 import NetworkError from "@/components/NetworkError";
+import CheckinButton from "@/components/checkin/CheckinButton";
+import LevelUpPopup from "@/components/xp/LevelUpPopup";
 import Image from "next/image";
 import { Fredoka } from "next/font/google";
 
@@ -17,6 +19,9 @@ export default function Home() {
   const [petData, setPetData] = useState<any>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [networkError, setNetworkError] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [levelUpInfo, setLevelUpInfo] = useState<{ level: number; badge: any } | null>(null);
+  const [checkinToast, setCheckinToast] = useState<{ xp: number; day: number } | null>(null);
 
   const loadData = useCallback(async () => {
     setNetworkError(null);
@@ -28,6 +33,8 @@ export default function Home() {
         router.push("/login");
         return;
       }
+
+      setUserId(session.user.id);
 
       const { data: pets, error } = await safeFetch(
         supabase.from("pets").select("*").eq("user_id", session.user.id).limit(1)
@@ -69,6 +76,7 @@ export default function Home() {
   }
 
   return (
+    <>
     <main className="flex min-h-screen flex-col bg-green-50 text-gray-900 pb-32 relative overflow-hidden">
       
       {/* BACKGROUND IMAGE */}
@@ -102,6 +110,20 @@ export default function Home() {
              petMood="happy" 
            />
         </div>
+
+        {/* Daily Check-in */}
+        {userId && (
+          <div className="w-full max-w-xs">
+            <CheckinButton
+              userId={userId}
+              onCheckinSuccess={(xp, day) => {
+                setCheckinToast({ xp, day });
+                setTimeout(() => setCheckinToast(null), 3000);
+              }}
+              onLevelUp={(level, badge) => setLevelUpInfo({ level, badge })}
+            />
+          </div>
+        )}
       </div>
 
       {/* NAVBAR BAWAH DIMASUKIN LAGI */}
@@ -110,5 +132,22 @@ export default function Home() {
       </div>
 
     </main>
+
+    {/* Check-in Toast — di luar <main> agar tidak terpotong overflow-hidden */}
+    {checkinToast && (
+      <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-[200] bg-green-500 text-white px-6 py-3 rounded-2xl font-bold text-base shadow-2xl animate-in zoom-in-95 fade-in duration-300 whitespace-nowrap">
+        🔥 Day {checkinToast.day} • +{checkinToast.xp} XP!
+      </div>
+    )}
+
+    {/* Level Up Popup — di luar <main> agar tidak terpotong */}
+    {levelUpInfo && (
+      <LevelUpPopup
+        newLevel={levelUpInfo.level}
+        newBadge={levelUpInfo.badge}
+        onClose={() => setLevelUpInfo(null)}
+      />
+    )}
+  </>
   );
 }

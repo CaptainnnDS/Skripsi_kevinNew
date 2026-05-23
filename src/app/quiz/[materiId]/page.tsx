@@ -8,6 +8,7 @@ import NavigationBar from "@/components/game/NavigationBar";
 import QuizEngine from "@/components/quiz/QuizEngine";
 import QuizReview from "@/components/quiz/QuizReview";
 import QuizResult from "@/components/quiz/QuizResult";
+import LevelUpPopup from "@/components/xp/LevelUpPopup";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Fredoka } from "next/font/google";
 
@@ -61,6 +62,7 @@ export default function QuizPage() {
 
   // Review state
   const [showReview, setShowReview] = useState(false);
+  const [levelUpInfo, setLevelUpInfo] = useState<{ level: number; badge: any } | null>(null);
 
   // Tab switch detection
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
@@ -238,6 +240,14 @@ export default function QuizPage() {
         answers,
       });
       setResult(quizResult);
+
+      // Cek level up dari XP result
+      if (quizResult.xpResult?.leveledUp) {
+        setLevelUpInfo({
+          level: quizResult.xpResult.newLevel,
+          badge: quizResult.xpResult.newBadge,
+        });
+      }
     } catch (err) {
       console.error("Error submitting quiz:", err);
       setError("Gagal submit quiz. Coba lagi.");
@@ -399,6 +409,15 @@ export default function QuizPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Level Up Popup */}
+      {levelUpInfo && (
+        <LevelUpPopup
+          newLevel={levelUpInfo.level}
+          newBadge={levelUpInfo.badge}
+          onClose={() => setLevelUpInfo(null)}
+        />
       )}
     </main>
   );

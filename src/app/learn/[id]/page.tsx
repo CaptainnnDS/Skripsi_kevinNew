@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { checkMateriAccess } from "@/lib/quiz";
+import { checkMateriAccess, recordMateriReview } from "@/lib/quiz";
 import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import RoomNavigation from "@/components/game/RoomNavigation";
@@ -135,6 +135,13 @@ export default function LearnDetail() {
       }
 
       setIsLoading(false);
+
+      // Track review materi untuk XP (1x per materi per hari)
+      try {
+        await recordMateriReview(session.user.id, Number(materiId));
+      } catch {
+        // Jika tabel belum ada, skip tanpa error
+      }
     };
 
     loadData();
