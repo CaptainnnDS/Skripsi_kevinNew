@@ -7,9 +7,7 @@ import NavigationBar from "@/components/game/NavigationBar";
 import PetCharacter from "@/components/game/PetCharacter"; 
 import Image from "next/image";
 import { Droplets, ChevronLeft, ChevronRight, X } from "lucide-react"; 
-import { Fredoka } from "next/font/google";
 
-const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 
 const emojiMap: Record<string, string> = {
   SoapBasic: "🧼", SoapFloral: "🧴", SoapBubble: "🫧", SoapBomb: "🎆"
@@ -272,7 +270,7 @@ export default function BathRoom() {
       <div className="relative z-[60]"><TopBar pet={petData} /></div>
       
       <div className="flex-1 flex flex-col items-center justify-center p-6 relative z-10 w-full max-w-lg mx-auto">
-        {!showRack && <h1 className={`text-4xl font-extrabold text-cyan-950 mb-8 drop-shadow-sm ${funFont.className}`}>Bathroom</h1>}
+        {!showRack && <h1 className={`text-4xl font-extrabold text-cyan-950 mb-8 drop-shadow-sm`}>Bathroom</h1>}
 
         <div onDragOver={(e) => e.preventDefault()} onDrop={handleDropToPet} className="relative flex flex-col items-center justify-center w-64 h-64 mb-12">
             <div className={`transition-all duration-300 ${activeAnim === "shower" ? 'scale-110' : ''}`}>
@@ -298,7 +296,7 @@ export default function BathRoom() {
       </div>
 
       {!showRack && (
-        <div className={`fixed bottom-20 left-0 w-full z-[70] px-4 pb-3 ${funFont.className}`}>
+        <div className={`fixed bottom-20 left-0 w-full z-[70] px-4 pb-3`}>
           <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.08)] border border-cyan-100 p-2.5 flex items-center gap-2">
 
             {/* SOAPS Button */}
@@ -370,7 +368,7 @@ export default function BathRoom() {
 
       {showRack && (
          <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-            <div className={`bg-white p-6 rounded-[2.5rem] shadow-2xl border-4 border-cyan-200 w-full max-w-sm flex flex-col h-[60vh] max-h-[500px] relative ${funFont.className}`}>
+            <div className={`bg-white p-6 rounded-[2.5rem] shadow-2xl border-4 border-cyan-200 w-full max-w-sm flex flex-col h-[60vh] max-h-[500px] relative`}>
                 <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-gray-100">
                     <div className="flex items-center"><Droplets size={28} className="text-pink-500 mr-2" /><h1 className="text-2xl font-extrabold text-cyan-950">Soap Rack</h1></div>
                     <button onClick={() => setShowRack(false)} className="p-2 bg-gray-100 hover:bg-red-100 hover:text-red-500 rounded-full transition-colors"><X size={24} /></button>

@@ -6,9 +6,7 @@ import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import QuizHistory, { type QuizAttempt } from "@/components/quiz/QuizHistory";
 import { ScrollText, BookOpen } from "lucide-react";
-import { Fredoka } from "next/font/google";
 
-const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 
 export default function QuizHistoryPage() {
   const router = useRouter();
@@ -115,7 +113,7 @@ export default function QuizHistoryPage() {
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-1">
             <ScrollText className="w-6 h-6 text-blue-600" />
-            <h1 className={`text-2xl font-bold text-blue-900 ${funFont.className}`}>
+            <h1 className={`text-2xl font-bold text-blue-900`}>
               Riwayat Quiz
             </h1>
           </div>

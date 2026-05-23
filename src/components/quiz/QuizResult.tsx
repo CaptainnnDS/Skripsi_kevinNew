@@ -2,10 +2,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trophy, RotateCcw, ArrowLeft, ChevronDown, ChevronUp, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
-import { Fredoka } from "next/font/google";
 import type { Question } from "@/lib/quiz";
 
-const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 
 interface QuizResultProps {
   score: number;
@@ -46,7 +44,7 @@ export default function QuizResult({
           )}
         </div>
 
-        <h2 className={`text-2xl font-bold mb-1 ${funFont.className} ${isPassed ? "text-green-600" : "text-blue-900"}`}>
+        <h2 className={`text-2xl font-bold mb-1 ${isPassed ? "text-green-600" : "text-blue-900"}`}>
           {isPassed ? "Selamat! Lulus!" : "Belum Lulus"}
         </h2>
 
@@ -59,7 +57,7 @@ export default function QuizResult({
         {/* Score */}
         <div className="inline-flex items-center gap-2 bg-blue-50 px-5 py-3 rounded-2xl mb-4">
           <Trophy className="w-5 h-5 text-blue-600" />
-          <span className={`text-3xl font-bold text-blue-900 ${funFont.className}`}>
+          <span className="text-3xl font-bold text-blue-900">
             {score}
           </span>
           <span className="text-lg text-gray-400">/ {totalQuestions}</span>
@@ -69,7 +67,7 @@ export default function QuizResult({
         {rewardCoins > 0 && (
           <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl px-4 py-2 inline-flex items-center gap-2">
             <span className="text-xl">💰</span>
-            <span className={`text-lg font-bold text-yellow-700 ${funFont.className}`}>
+            <span className="text-lg font-bold text-yellow-700">
               +{rewardCoins} Koin
             </span>
           </div>

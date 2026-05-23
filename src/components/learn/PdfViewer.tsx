@@ -2,14 +2,12 @@
 import { useState, useCallback } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Loader2, AlertCircle, RotateCcw } from "lucide-react";
-import { Fredoka } from "next/font/google";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
 // Setup worker untuk pdf.js
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
-const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 
 interface PdfViewerProps {
   pdfUrl: string;
@@ -79,7 +77,7 @@ export default function PdfViewer({ pdfUrl, title }: PdfViewerProps) {
     <div className="bg-white rounded-2xl shadow-md border-2 border-blue-100 overflow-hidden">
       {/* Header */}
       <div className="px-4 py-3 border-b border-blue-50 flex items-center justify-between">
-        <h2 className={`text-sm font-bold text-blue-900 truncate ${funFont.className}`}>
+        <h2 className="text-sm font-bold text-blue-900 truncate">
           {title}
         </h2>
         {/* Zoom controls */}
@@ -147,21 +145,21 @@ export default function PdfViewer({ pdfUrl, title }: PdfViewerProps) {
             <button
               onClick={goToPrevPage}
               disabled={pageNumber <= 1}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 font-semibold text-sm hover:bg-blue-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 font-bold text-sm hover:bg-blue-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
               Sebelumnya
             </button>
 
-            <span className="text-sm text-gray-600 font-medium">
-              Halaman <span className="font-bold text-blue-600">{pageNumber}</span> dari{" "}
-              <span className="font-bold">{numPages}</span>
+            <span className="text-sm text-gray-600 font-semibold">
+              Halaman <span className="font-extrabold text-blue-600">{pageNumber}</span> dari{" "}
+              <span className="font-extrabold">{numPages}</span>
             </span>
 
             <button
               onClick={goToNextPage}
               disabled={pageNumber >= numPages}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 font-semibold text-sm hover:bg-blue-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 font-bold text-sm hover:bg-blue-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               Selanjutnya
               <ChevronRight className="w-4 h-4" />

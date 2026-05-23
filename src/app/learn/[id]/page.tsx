@@ -8,9 +8,7 @@ import NavigationBar from "@/components/game/NavigationBar";
 import PdfViewer from "@/components/learn/PdfViewer";
 import MateriQuizHistory, { type MateriAttempt } from "@/components/quiz/MateriQuizHistory";
 import { ArrowLeft, Loader2, Target } from "lucide-react";
-import { Fredoka } from "next/font/google";
 
-const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 
 interface Materi {
   id: number;
@@ -201,7 +199,7 @@ export default function LearnDetail() {
               <span className="text-white font-bold text-sm">📖</span>
             </div>
             <div>
-              <h1 className={`text-xl font-bold text-blue-900 ${funFont.className}`}>
+              <h1 className={`text-xl font-bold text-blue-900`}>
                 {materi!.title}
               </h1>
               <p className="text-xs text-gray-500">{materi!.description}</p>

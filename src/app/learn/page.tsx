@@ -10,6 +10,7 @@ import { Fredoka } from "next/font/google";
 
 const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 
+
 interface Materi {
   id: number;
   title: string;
@@ -153,7 +154,7 @@ export default function Learn() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col bg-blue-50 text-gray-900 pb-24 relative overflow-hidden">
+    <main className="flex min-h-screen flex-col bg-blue-50 text-gray-900 pb-24 relative overflow-x-hidden">
       <TopBar pet={petData} />
 
       <div className="flex-1 flex flex-col px-16 py-4 relative z-10">
@@ -171,7 +172,7 @@ export default function Learn() {
         </div>
 
         {/* Materi Cards */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 overflow-x-clip">
           {materiList.length === 0 && (
             <div className="bg-white rounded-2xl shadow-md border-2 border-blue-100 p-8 text-center">
               <span className="text-4xl block mb-2">📭</span>

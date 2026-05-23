@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { CalendarCheck, Flame, Loader2 } from "lucide-react";
 import { getCheckinStatus, performCheckin, STREAK_XP, CheckinStatus } from "@/lib/checkin";
 
+
 interface CheckinButtonProps {
   userId: string;
   onCheckinSuccess?: (xpEarned: number, streakDay: number) => void;
@@ -40,7 +41,6 @@ export default function CheckinButton({ userId, onCheckinSuccess, onLevelUp }: C
         todayXp: result.xpEarned,
         weekXpEarned: 0,
       });
-      // Kirim ke parent untuk ditampilkan di luar overflow-hidden
       onCheckinSuccess?.(result.xpEarned, result.streakDay);
 
       if (result.xpResult?.leveledUp) {
@@ -86,18 +86,18 @@ export default function CheckinButton({ userId, onCheckinSuccess, onLevelUp }: C
       )}
 
       <div className="flex-1 text-left">
-        <p className="font-bold text-sm text-gray-800">
+        <p className="font-extrabold text-sm text-gray-800">
           {status?.checkedInToday ? "Sudah Check-in ✅" : "Daily Check-in"}
         </p>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs font-semibold text-gray-500">
           {status?.checkedInToday
-            ? `Day ${status.currentStreakDay} streak`
+            ? `Day ${status.currentStreakDay} streak 🔥`
             : `Day ${clampedDay} • +${nextXp} XP`}
         </p>
       </div>
 
       {!status?.checkedInToday && (
-        <div className="bg-orange-500 text-white px-3 py-1 rounded-lg text-xs font-bold">
+        <div className="bg-orange-500 text-white px-3 py-1 rounded-lg text-xs font-extrabold">
           +{nextXp} XP
         </div>
       )}

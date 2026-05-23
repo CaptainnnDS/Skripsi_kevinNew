@@ -2,6 +2,7 @@
 import { Home, BookOpen, PenSquare, Trophy, Store } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
+
 interface NavItem {
   path: string;
   icon: typeof Home;

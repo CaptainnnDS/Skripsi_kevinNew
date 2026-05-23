@@ -1,9 +1,7 @@
 "use client";
 import { CheckCircle2, AlertCircle, Send, ArrowLeft } from "lucide-react";
-import { Fredoka } from "next/font/google";
 import type { Question } from "@/lib/quiz";
 
-const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 
 interface QuizReviewProps {
   questions: Question[];
@@ -21,7 +19,7 @@ export default function QuizReview({ questions, answers, onConfirm, onBack }: Qu
       {/* Header */}
       <div className="bg-white rounded-2xl shadow-md border-2 border-blue-100 p-4 text-center">
         <span className="text-4xl block mb-2">📋</span>
-        <h2 className={`text-lg font-bold text-blue-900 ${funFont.className}`}>
+        <h2 className="text-lg font-bold text-blue-900">
           Review Jawaban
         </h2>
         <p className="text-xs text-gray-500 mt-1">

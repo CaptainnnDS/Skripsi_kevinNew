@@ -1,6 +1,7 @@
 "use client";
 import { getBadgeFromLevel, BadgeTier } from "@/lib/xp";
 
+
 interface LevelBadgeProps {
   level: number;
   size?: "sm" | "md" | "lg";

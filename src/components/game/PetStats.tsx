@@ -2,6 +2,7 @@
 import { motion } from "framer-motion";
 import { Heart, Zap, Droplets, UtensilsCrossed } from "lucide-react";
 
+
 const stats = [
   { key: "hunger" as const, label: "Hunger", icon: UtensilsCrossed, color: "bg-orange-500" },
   { key: "happiness" as const, label: "Happiness", icon: Heart, color: "bg-pink-500" },

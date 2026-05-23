@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { Flame } from "lucide-react";
 
+
 interface LeaderboardRankBarProps {
   rank: number;
   total: number;

@@ -11,6 +11,7 @@ import LeaderboardRankBar from "@/components/leaderboard/LeaderboardRankBar";
 import ProfilePopup from "@/components/leaderboard/ProfilePopup";
 import NetworkError from "@/components/NetworkError";
 
+
 export default function LeaderboardPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
@@ -134,8 +135,8 @@ export default function LeaderboardPage() {
             <Trophy className="text-white" size={28} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Papan Peringkat</h1>
-            <p className="text-gray-500 text-sm">
+            <h1 className={`text-2xl font-bold text-gray-800`}>Papan Peringkat</h1>
+            <p className={`text-gray-500 text-sm font-semibold`}>
               Top 10 pemain dengan koin terbanyak
             </p>
           </div>

@@ -7,6 +7,7 @@ import PetCharacter from "@/components/game/PetCharacter";
 import LevelBadge from "@/components/xp/LevelBadge";
 import XpProgressBar from "@/components/xp/XpProgressBar";
 
+
 interface ProfilePopupProps {
   entry: LeaderboardEntry;
   currentUserId: string;

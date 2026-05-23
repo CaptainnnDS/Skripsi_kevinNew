@@ -10,9 +10,7 @@ import QuizReview from "@/components/quiz/QuizReview";
 import QuizResult from "@/components/quiz/QuizResult";
 import LevelUpPopup from "@/components/xp/LevelUpPopup";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { Fredoka } from "next/font/google";
 
-const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 
 interface Materi {
   id: number;
@@ -332,7 +330,7 @@ export default function QuizPage() {
             <div className="flex-shrink-0 bg-blue-600 w-8 h-8 rounded-lg flex items-center justify-center shadow-sm">
               <span className="text-white font-bold text-xs">🧠</span>
             </div>
-            <h1 className={`text-lg font-bold text-blue-900 ${funFont.className}`}>
+            <h1 className={`text-lg font-bold text-blue-900`}>
               Quiz: {materi!.title}
             </h1>
           </div>
@@ -384,7 +382,7 @@ export default function QuizPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
             <span className="text-4xl block text-center mb-3">😱</span>
-            <h3 className={`text-lg font-bold text-gray-900 text-center mb-2 ${funFont.className}`}>
+            <h3 className={`text-lg font-bold text-gray-900 text-center mb-2`}>
               Yakin Keluar?
             </h3>
             <p className="text-sm text-gray-600 text-center mb-1">

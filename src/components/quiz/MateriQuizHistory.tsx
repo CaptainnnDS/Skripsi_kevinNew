@@ -1,9 +1,7 @@
 "use client";
-import { Fredoka } from "next/font/google";
 import { ScrollText } from "lucide-react";
 import { PASS_THRESHOLD } from "@/lib/quiz";
 
-const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 
 export interface MateriAttempt {
   date: string; // YYYY-MM-DD
@@ -34,7 +32,7 @@ export default function MateriQuizHistory({ attempts }: MateriQuizHistoryProps) 
     <div className="mt-4">
       <div className="flex items-center gap-1.5 mb-2">
         <ScrollText className="w-4 h-4 text-blue-600" />
-        <h3 className={`text-sm font-bold text-blue-900 ${funFont.className}`}>
+        <h3 className="text-sm font-bold text-blue-900">
           Riwayat Percobaan
         </h3>
       </div>

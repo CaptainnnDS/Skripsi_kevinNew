@@ -3,6 +3,7 @@ import { LeaderboardEntry } from "@/lib/leaderboard";
 import { Trophy, Medal, Award } from "lucide-react";
 import LevelBadge from "@/components/xp/LevelBadge";
 
+
 interface LeaderboardTableProps {
   entries: LeaderboardEntry[];
   currentUserId: string;
@@ -57,7 +58,7 @@ export default function LeaderboardTable({
           <button
             key={entry.userId}
             onClick={() => onSelect(entry)}
-            className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all hover:scale-[1.02] hover:shadow-md ${getRankBg(
+            className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all hover:-translate-y-0.5 hover:shadow-md ${getRankBg(
               entry.rank,
               isCurrentUser
             )}`}

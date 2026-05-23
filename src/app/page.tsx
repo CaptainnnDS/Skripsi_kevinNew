@@ -9,9 +9,7 @@ import NetworkError from "@/components/NetworkError";
 import CheckinButton from "@/components/checkin/CheckinButton";
 import LevelUpPopup from "@/components/xp/LevelUpPopup";
 import Image from "next/image";
-import { Fredoka } from "next/font/google";
 
-const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 
 export default function Home() {
   const router = useRouter();
@@ -94,7 +92,7 @@ export default function Home() {
 
       {/* KONTEN TENGAH — flex-1 agar mengisi sisa ruang antara TopBar dan NavigationBar */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 relative z-10 w-full max-w-lg mx-auto overflow-hidden">
-        <h1 className={`text-3xl font-extrabold mb-4 drop-shadow-sm text-green-950 ${funFont.className}`}>
+        <h1 className="text-3xl font-extrabold mb-4 drop-shadow-sm text-green-950">
           Living Room
         </h1>
         

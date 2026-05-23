@@ -6,9 +6,7 @@ import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import PetCharacter from "@/components/game/PetCharacter"; 
 import { X, CheckCircle } from "lucide-react"; 
-import { Fredoka } from "next/font/google";
 
-const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 
 // --- KOMPONEN TEMA LUAR ANGKASA (SPACE THEME) ---
 const SpaceThemeLayer = ({ isDark }: { isDark: boolean }) => {
@@ -185,7 +183,7 @@ export default function Bedroom() {
       <div className="flex-1 relative flex items-center justify-center">
         {isSpace && <SpaceThemeLayer isDark={!isLightOn} />}
         <div className="relative z-10 flex flex-col items-center justify-center">
-          <h1 className={`text-4xl font-extrabold mb-12 drop-shadow-sm transition-all duration-1000 ${isLightOn ? 'text-indigo-950' : 'text-white opacity-20'} ${funFont.className}`}>Bedroom</h1>
+          <h1 className={`text-4xl font-extrabold mb-12 drop-shadow-sm transition-all duration-1000 ${isLightOn ? 'text-indigo-950' : 'text-white opacity-20'}`}>Bedroom</h1>
           <div className="relative w-80 h-80 flex items-center justify-center">
              {!isLightOn && <NightlightAtmos type={petData.equipped_nightlight} />}
              {petData.equipped_bed !== 'BedNone' && (
@@ -265,7 +263,7 @@ export default function Bedroom() {
 
       {showCloset && (
         <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-6 backdrop-blur-md">
-          <div className={`bg-white p-8 rounded-[3.5rem] shadow-2xl w-full max-w-md flex flex-col h-[80vh] relative border-[6px] border-blue-50 ${funFont.className}`}>
+          <div className={`bg-white p-8 rounded-[3.5rem] shadow-2xl w-full max-w-md flex flex-col h-[80vh] relative border-[6px] border-blue-50`}>
             <div className="flex justify-between items-center mb-8"><div className="flex items-center gap-3"><span className="text-3xl">🚪</span><h1 className="text-3xl font-extrabold text-[#2D3663]">My Closet</h1></div><button onClick={() => setShowCloset(false)} className="w-12 h-12 flex items-center justify-center bg-gray-50 rounded-full text-gray-400 hover:bg-red-50 transition-all"><X size={28}/></button></div>
             <div className="flex gap-1 mb-8 bg-[#F0F4FF] p-1.5 rounded-[2rem] border-2 border-white">{[ {key:'colors', l:'Warna'}, {key:'bedroom', l:'Kasur'}, {key:'nightlight', l:'Lampu'}, {key:'wallpaper', l:'Tema'} ].map(cat => (<button key={cat.key} onClick={() => setClosetCategory(cat.key)} className={`flex-1 py-3 rounded-full font-bold text-[10px] uppercase transition-all ${closetCategory === cat.key ? 'bg-white shadow-xl text-blue-600' : 'text-[#B0B8D1]'}`}>{cat.l}</button>))}</div>
             <div className="flex-1 overflow-y-auto grid grid-cols-2 gap-4 pr-2 custom-scrollbar">

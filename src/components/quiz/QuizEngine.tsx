@@ -1,10 +1,8 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
-import { Fredoka } from "next/font/google";
 import type { Question } from "@/lib/quiz";
 
-const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 
 interface QuizEngineProps {
   questions: Question[];
@@ -93,7 +91,7 @@ export default function QuizEngine({ questions, onFinish }: QuizEngineProps) {
         <p className="text-xs text-blue-600 font-semibold mb-2">
           Soal {currentIndex + 1} dari {totalQuestions}
         </p>
-        <h2 className={`text-base font-bold text-gray-900 mb-4 ${funFont.className}`}>
+        <h2 className="text-base font-bold text-gray-900 mb-4">
           {currentQuestion.question}
         </h2>
 

@@ -5,9 +5,7 @@ import { supabase, safeFetch } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import { Pizza, FlaskConical, Droplets, Shirt, Bed, Palette, ArrowLeft, Store, Coins, CheckCircle, Lightbulb, Image as ImageIcon } from "lucide-react"; 
-import { Fredoka } from "next/font/google";
 
-const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 
 const emojiMap: Record<string, string> = {
   // Makanan & Minuman
@@ -177,7 +175,7 @@ export default function Shop() {
     <main className="fixed inset-0 flex flex-col bg-blue-50 text-gray-900 pb-24">
       <TopBar pet={petData} />
       {popupMsg && (
-        <div className={`absolute top-24 left-1/2 -translate-x-1/2 z-[200] bg-green-500 text-white px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 animate-bounce ${funFont.className}`}>
+        <div className={`absolute top-24 left-1/2 -translate-x-1/2 z-[200] bg-green-500 text-white px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 animate-bounce`}>
           <CheckCircle size={20} /> {popupMsg}
         </div>
       )}
@@ -185,18 +183,18 @@ export default function Shop() {
         <div className="bg-white p-6 rounded-[2rem] shadow-xl border-4 border-blue-200 w-full h-full flex flex-col overflow-hidden">
           {!activeCategory ? (
             <>
-              <h1 className={`text-3xl font-extrabold text-center text-blue-900 mb-6 flex items-center justify-center gap-2 shrink-0 ${funFont.className}`}><Store size={32} className="text-purple-500" /> Shop</h1>
+              <h1 className={`text-3xl font-extrabold text-center text-blue-900 mb-6 flex items-center justify-center gap-2 shrink-0`}><Store size={32} className="text-purple-500" /> Shop</h1>
               <div className="grid grid-cols-3 gap-4 overflow-y-auto pr-1">
                 {shopCategories.map((cat) => (
                   <button key={cat.id} onClick={() => setActiveCategory(cat.id)} className="flex flex-col items-center justify-center p-2 rounded-2xl hover:scale-105 transition-transform group">
                     <div className={`${cat.bg} p-4 rounded-2xl mb-2 shadow-sm border-2 border-transparent group-hover:border-blue-300 transition-colors`}><cat.icon size={36} className={cat.color} /></div>
-                    <span className={`text-[10px] font-bold text-gray-700 tracking-wide uppercase ${funFont.className}`}>{cat.name}</span>
+                    <span className={`text-[10px] font-bold text-gray-700 tracking-wide uppercase`}>{cat.name}</span>
                   </button>
                 ))}
               </div>
             </>
           ) : (
-            <div className={`flex flex-col h-full overflow-hidden ${funFont.className}`}>
+            <div className={`flex flex-col h-full overflow-hidden`}>
               <div className="flex items-center mb-4 pb-4 border-b-2 border-gray-100 shrink-0">
                 <button onClick={() => setActiveCategory(null)} className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"><ArrowLeft size={24} className="text-gray-600" /></button>
                 <h1 className="text-2xl ml-4 capitalize text-blue-900 font-extrabold flex-1">{activeCategory}</h1>

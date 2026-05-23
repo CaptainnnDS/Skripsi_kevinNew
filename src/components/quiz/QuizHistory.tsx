@@ -1,10 +1,8 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { RotateCcw, Eye, Trophy, Coins } from "lucide-react";
-import { Fredoka } from "next/font/google";
 import { PASS_THRESHOLD } from "@/lib/quiz";
 
-const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 
 export interface QuizAttempt {
   materiId: number;
@@ -52,7 +50,7 @@ export default function QuizHistory({ attempts }: QuizHistoryProps) {
         <div className="text-center">
           <div className="flex items-center justify-center gap-1 text-blue-600">
             <Trophy className="w-4 h-4" />
-            <span className={`text-lg font-bold ${funFont.className}`}>{totalAttempts}</span>
+            <span className="text-lg font-bold">{totalAttempts}</span>
           </div>
           <p className="text-[10px] text-gray-400">Percobaan</p>
         </div>
@@ -60,7 +58,7 @@ export default function QuizHistory({ attempts }: QuizHistoryProps) {
         <div className="text-center">
           <div className="flex items-center justify-center gap-1 text-yellow-600">
             <Coins className="w-4 h-4" />
-            <span className={`text-lg font-bold ${funFont.className}`}>{totalCoins.toLocaleString()}</span>
+            <span className="text-lg font-bold">{totalCoins.toLocaleString()}</span>
           </div>
           <p className="text-[10px] text-gray-400">Total Koin</p>
         </div>
@@ -82,7 +80,7 @@ export default function QuizHistory({ attempts }: QuizHistoryProps) {
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <p className="text-[10px] text-gray-400">{formatDate(attempt.date)}</p>
-                  <h3 className={`text-sm font-bold text-gray-900 ${funFont.className}`}>
+                  <h3 className="text-sm font-bold text-gray-900">
                     {attempt.materiTitle}
                   </h3>
                 </div>
