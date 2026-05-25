@@ -1,11 +1,12 @@
 "use client";
-import { User, Utensils, Zap, Heart, Droplets, LogOut, Bell, Check, CalendarCheck } from "lucide-react";
+import { User, Utensils, Zap, Heart, Droplets, LogOut, Bell, Check, CalendarCheck, PenLine } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getUserXp, UserXp } from "@/lib/xp";
 import LevelBadge from "@/components/xp/LevelBadge";
 import CheckinPopup from "@/components/checkin/CheckinPopup";
+import PetSetupPopup from "@/components/game/PetSetupPopup";
 import {
   getUnreadNotificationCount,
   getNotifications,
@@ -26,6 +27,7 @@ export default function TopBar({ pet }: { pet: any }) {
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const [userXp, setUserXp] = useState<UserXp | null>(null);
   const [showCheckin, setShowCheckin] = useState(false);
+  const [showEditPet, setShowEditPet] = useState(false);
   const router = useRouter();
 
   // Fetch user info
@@ -155,6 +157,15 @@ export default function TopBar({ pet }: { pet: any }) {
                 </p>
               </div>
               
+              {/* Tombol Edit Pet */}
+              <button 
+                onClick={() => { setShowEditPet(true); setShowDropdown(false); }}
+                className="flex items-center gap-2 w-full text-left px-4 py-3 text-sm font-bold text-purple-500 hover:bg-purple-50 hover:text-purple-600 transition-colors border-b border-gray-100"
+              >
+                <PenLine size={16} />
+                Edit Pet (300 🪙)
+              </button>
+
               {/* Tombol Log Out */}
               <button 
                 onClick={handleLogout}
@@ -269,11 +280,26 @@ export default function TopBar({ pet }: { pet: any }) {
           userId={userId}
           onClose={() => setShowCheckin(false)}
           onXpGained={async () => {
-            // Refresh XP data
             try {
               const xp = await getUserXp(userId);
               setUserXp(xp);
             } catch {}
+          }}
+        />
+      )}
+
+      {/* Edit Pet Popup */}
+      {showEditPet && userId && (
+        <PetSetupPopup
+          userId={userId}
+          mode="edit"
+          currentName={currentPet.name || ""}
+          currentColor={currentPet.body_color || "#60a5fa"}
+          currentCoins={currentPet.coins || 0}
+          onClose={() => setShowEditPet(false)}
+          onComplete={() => {
+            setShowEditPet(false);
+            window.location.reload();
           }}
         />
       )}

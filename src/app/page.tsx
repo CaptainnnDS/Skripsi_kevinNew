@@ -8,6 +8,7 @@ import NavigationBar from "@/components/game/NavigationBar";
 import NetworkError from "@/components/NetworkError";
 import CheckinButton from "@/components/checkin/CheckinButton";
 import LevelUpPopup from "@/components/xp/LevelUpPopup";
+import PetSetupPopup from "@/components/game/PetSetupPopup";
 import Image from "next/image";
 
 
@@ -46,9 +47,16 @@ export default function Home() {
       if (pets && pets.length > 0) {
         setPetData(pets[0]);
       } else {
-        // Pet belum ada — arahkan ke setup
-        router.push("/setup");
-        return;
+        // Pet belum ada — buat record kosong agar popup setup muncul
+        const { data: newPet, error: createErr } = await safeFetch(
+          supabase.from("pets").insert({ user_id: session.user.id }).select().single()
+        );
+        if (createErr) {
+          setNetworkError("Gagal membuat pet. Coba lagi.");
+          setIsAuthLoading(false);
+          return;
+        }
+        setPetData(newPet);
       }
     } catch (err: any) {
       setNetworkError(err.message || "Terjadi kesalahan.");
@@ -161,6 +169,18 @@ export default function Home() {
         newLevel={levelUpInfo.level}
         newBadge={levelUpInfo.badge}
         onClose={() => setLevelUpInfo(null)}
+      />
+    )}
+
+    {/* Pet Setup Popup — muncul jika pet belum punya nama */}
+    {petData && !petData.name && userId && (
+      <PetSetupPopup
+        userId={userId}
+        mode="setup"
+        currentColor={petData.body_color}
+        onComplete={(name, color) => {
+          setPetData({ ...petData, name, body_color: color });
+        }}
       />
     )}
   </>
