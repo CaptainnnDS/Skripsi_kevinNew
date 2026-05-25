@@ -260,16 +260,32 @@ export default function TopBar({ pet }: { pet: any }) {
 
       {/* KANAN: 4 Kotak Status Bar */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-50 border-2 border-orange-200 text-orange-600 font-bold shadow-sm">
+        <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold shadow-sm ${
+          currentPet.hunger < 30
+            ? 'bg-red-100 border-2 border-red-300 text-red-600 animate-pulse'
+            : 'bg-orange-50 border-2 border-orange-200 text-orange-600'
+        }`}>
           <Utensils size={18} /> <span>{currentPet.hunger}%</span>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-yellow-50 border-2 border-yellow-200 text-yellow-500 font-bold shadow-sm">
+        <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold shadow-sm ${
+          currentPet.energy < 30
+            ? 'bg-red-100 border-2 border-red-300 text-red-600 animate-pulse'
+            : 'bg-yellow-50 border-2 border-yellow-200 text-yellow-500'
+        }`}>
           <Zap size={18} /> <span>{currentPet.energy}%</span>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-pink-50 border-2 border-pink-200 text-pink-500 font-bold shadow-sm">
+        <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold shadow-sm ${
+          currentPet.happiness < 30
+            ? 'bg-red-100 border-2 border-red-300 text-red-600 animate-pulse'
+            : 'bg-pink-50 border-2 border-pink-200 text-pink-500'
+        }`}>
           <Heart size={18} /> <span>{currentPet.happiness}%</span>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-50 border-2 border-cyan-200 text-cyan-500 font-bold shadow-sm">
+        <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold shadow-sm ${
+          currentPet.cleanliness < 30
+            ? 'bg-red-100 border-2 border-red-300 text-red-600 animate-pulse'
+            : 'bg-cyan-50 border-2 border-cyan-200 text-cyan-500'
+        }`}>
           <Droplets size={18} /> <span>{currentPet.cleanliness}%</span>
         </div>
       </div>

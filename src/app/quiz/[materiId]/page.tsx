@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { submitQuiz, checkMateriAccess, type Question, type QuizResultData } from "@/lib/quiz";
+import { applyDecay, syncPetStats, canAccessLearning, ENERGY_THRESHOLD } from "@/lib/pet-stats";
 import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import QuizEngine from "@/components/quiz/QuizEngine";
@@ -94,7 +95,16 @@ export default function QuizPage() {
         router.push("/");
         return;
       }
-      setPetData(pets[0]);
+      const decayed = applyDecay(pets[0]);
+      if (decayed._decayed) await syncPetStats(pets[0].id, decayed);
+      setPetData(decayed);
+
+      // Energy gate check
+      if (!canAccessLearning(decayed)) {
+        setError(`Energy terlalu rendah (${decayed.energy}%)! Minimal ${ENERGY_THRESHOLD}% untuk quiz. Beri makan di Kitchen atau istirahatkan di Bedroom.`);
+        setIsLoading(false);
+        return;
+      }
 
       // Fetch materi info
       const { data: materiData, error: materiError } = await supabase

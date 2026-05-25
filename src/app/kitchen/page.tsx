@@ -7,6 +7,7 @@ import NavigationBar from "@/components/game/NavigationBar";
 import PetCharacter from "@/components/game/PetCharacter"; 
 import Image from "next/image";
 import { Refrigerator, ChevronLeft, ChevronRight, Store, X } from "lucide-react"; 
+import { applyDecay, getPetMood, syncPetStats } from "@/lib/pet-stats";
 
 
 const emojiMap: Record<string, string> = {
@@ -37,7 +38,11 @@ export default function Kitchen() {
       if (!session) { router.push("/login"); return; }
 
       const { data: pets } = await supabase.from("pets").select("*").eq("user_id", session.user.id).limit(1);
-      if (pets && pets.length > 0) setPetData(pets[0]);
+      if (pets && pets.length > 0) {
+        const decayed = applyDecay(pets[0]);
+        if (decayed._decayed) await syncPetStats(pets[0].id, decayed);
+        setPetData(decayed);
+      }
       else { router.push("/"); return; }
 
       const { data: invData } = await supabase.from("inventory").select(`id, quantity, items ( id, name, category, value, stat_type, icon_name, color_class )`).eq("user_id", session.user.id).gt("quantity", 0);
@@ -128,8 +133,7 @@ export default function Kitchen() {
           <>
             <h1 className={`text-4xl font-extrabold text-orange-950 mb-8 drop-shadow-sm`}>Kitchen</h1>
             <div onDragOver={(e) => e.preventDefault()} onDrop={handleDropToPet} className="relative flex flex-col items-center justify-center w-64 h-64 mb-12">
-               {/* FIX: MASUKIN petData={petData} BIAR WARNA KEBACA */}
-               <PetCharacter petData={petData} petMood="happy" isSleeping={petData.is_sleeping} />
+               <PetCharacter petData={petData} petMood={getPetMood(petData)} isSleeping={petData.is_sleeping} />
             </div>
           </>
         )}

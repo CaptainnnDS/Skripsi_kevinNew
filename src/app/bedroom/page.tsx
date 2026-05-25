@@ -6,6 +6,7 @@ import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import PetCharacter from "@/components/game/PetCharacter"; 
 import { X, CheckCircle } from "lucide-react"; 
+import { applyDecay, getPetMood, syncPetStats } from "@/lib/pet-stats";
 
 
 // --- KOMPONEN TEMA LUAR ANGKASA (SPACE THEME) ---
@@ -128,7 +129,11 @@ export default function Bedroom() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push("/login"); return; }
       const { data: pets } = await supabase.from("pets").select("*").eq("user_id", session.user.id).single();
-      if (pets) setPetData(pets);
+      if (pets) {
+        const decayed = applyDecay(pets);
+        if (decayed._decayed) await syncPetStats(pets.id, decayed);
+        setPetData(decayed);
+      }
 
       const { data: invData } = await supabase.from("inventory").select(`id, quantity, items ( id, name, category, icon_name )`).eq("user_id", session.user.id).gt("quantity", 0);
       if (invData) {
@@ -159,10 +164,10 @@ export default function Bedroom() {
     if (!petData) return;
     const ns = !petData.is_sleeping;
     const { error } = await safeFetch(
-      supabase.from("pets").update({ is_sleeping: ns }).eq("id", petData.id)
+      supabase.from("pets").update({ is_sleeping: ns, last_stat_update: new Date().toISOString() }).eq("id", petData.id)
     );
     if (error) { alert("Gagal update status tidur. Coba lagi."); return; }
-    setPetData({ ...petData, is_sleeping: ns });
+    setPetData({ ...petData, is_sleeping: ns, last_stat_update: new Date().toISOString() });
   };
 
   if (isAuthLoading || !petData) return <div className="min-h-screen bg-[#EEF2FF]"></div>;
@@ -192,7 +197,7 @@ export default function Bedroom() {
                </div>
              )}
              <div className="relative z-10 transition-transform duration-500" style={{ transform: petData.equipped_bed !== 'BedNone' ? bStyle.petY : 'translateY(0)' }}>
-               <PetCharacter petData={petData} petMood="happy" isSleeping={petData.is_sleeping} />
+               <PetCharacter petData={petData} petMood={getPetMood(petData)} isSleeping={petData.is_sleeping} />
              </div>
           </div>
         </div>

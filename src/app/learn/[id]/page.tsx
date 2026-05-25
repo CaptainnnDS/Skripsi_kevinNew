@@ -3,11 +3,15 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { checkMateriAccess, recordMateriReview } from "@/lib/quiz";
+import { applyDecay, syncPetStats, canAccessLearning, ENERGY_THRESHOLD, getPetMood } from "@/lib/pet-stats";
 import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import PdfViewer from "@/components/learn/PdfViewer";
 import MateriQuizHistory, { type MateriAttempt } from "@/components/quiz/MateriQuizHistory";
 import { ArrowLeft, Loader2, Target } from "lucide-react";
+import { Fredoka } from "next/font/google";
+
+const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 
 
 interface Materi {
@@ -29,6 +33,7 @@ export default function LearnDetail() {
   const [error, setError] = useState<string | null>(null);
   const [quizPassed, setQuizPassed] = useState(false);
   const [quizHistory, setQuizHistory] = useState<MateriAttempt[]>([]);
+  const [energyBlocked, setEnergyBlocked] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -53,7 +58,14 @@ export default function LearnDetail() {
       }
 
       if (pets && pets.length > 0) {
-        setPetData(pets[0]);
+        const decayed = applyDecay(pets[0]);
+        if (decayed._decayed) await syncPetStats(pets[0].id, decayed);
+        setPetData(decayed);
+        if (!canAccessLearning(decayed)) {
+          setEnergyBlocked(true);
+          setIsLoading(false);
+          return;
+        }
       } else {
         router.push("/");
         return;
@@ -228,6 +240,25 @@ export default function LearnDetail() {
       </button>
 
       <NavigationBar />
+
+      {/* Energy Gate Overlay */}
+      {energyBlocked && (
+        <div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-6 backdrop-blur-sm">
+          <div className={`bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl ${funFont.className}`}>
+            <span className="text-6xl mb-4 block">⚡</span>
+            <h2 className="text-2xl font-extrabold text-gray-800 mb-2">Energy Terlalu Rendah!</h2>
+            <p className="text-gray-500 font-semibold mb-2">Pet kamu butuh energy minimal {ENERGY_THRESHOLD}% untuk belajar.</p>
+            <div className="w-full bg-gray-200 rounded-full h-4 mb-6 overflow-hidden">
+              <div className="h-full bg-red-400 rounded-full transition-all" style={{ width: `${petData?.energy || 0}%` }} />
+            </div>
+            <p className="text-sm text-gray-400 font-medium mb-6">Beri makan di Kitchen atau istirahatkan di Bedroom!</p>
+            <div className="flex gap-3">
+              <button onClick={() => router.push("/kitchen")} className="flex-1 py-3 rounded-xl bg-orange-400 text-white font-extrabold hover:bg-orange-500 transition-colors">🍳 Kitchen</button>
+              <button onClick={() => router.push("/bedroom")} className="flex-1 py-3 rounded-xl bg-indigo-400 text-white font-extrabold hover:bg-indigo-500 transition-colors">🛏️ Bedroom</button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

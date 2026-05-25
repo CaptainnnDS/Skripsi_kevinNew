@@ -8,6 +8,7 @@ import NavigationBar from "@/components/game/NavigationBar";
 import NetworkError from "@/components/NetworkError";
 import CheckinButton from "@/components/checkin/CheckinButton";
 import LevelUpPopup from "@/components/xp/LevelUpPopup";
+import { applyDecay, getPetMood, syncPetStats } from "@/lib/pet-stats";
 import PetSetupPopup from "@/components/game/PetSetupPopup";
 import Image from "next/image";
 
@@ -45,7 +46,9 @@ export default function Home() {
       }
 
       if (pets && pets.length > 0) {
-        setPetData(pets[0]);
+        const decayed = applyDecay(pets[0]);
+        if (decayed._decayed) await syncPetStats(pets[0].id, decayed);
+        setPetData(decayed);
       } else {
         // Pet belum ada — buat record kosong agar popup setup muncul
         const { data: newPet, error: createErr } = await safeFetch(
@@ -107,7 +110,7 @@ export default function Home() {
         <div className="relative flex flex-col items-center justify-center w-52 h-52 mb-4">
            <PetCharacter 
              petData={petData} 
-             petMood="happy" 
+             petMood={getPetMood(petData)} 
            />
         </div>
 

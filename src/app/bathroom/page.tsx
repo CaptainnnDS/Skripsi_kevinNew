@@ -7,6 +7,7 @@ import NavigationBar from "@/components/game/NavigationBar";
 import PetCharacter from "@/components/game/PetCharacter"; 
 import Image from "next/image";
 import { Droplets, ChevronLeft, ChevronRight, X } from "lucide-react"; 
+import { applyDecay, getPetMood, syncPetStats } from "@/lib/pet-stats";
 
 
 const emojiMap: Record<string, string> = {
@@ -41,7 +42,11 @@ export default function BathRoom() {
       if (!session) { router.push("/login"); return; }
 
       const { data: pets } = await supabase.from("pets").select("*").eq("user_id", session.user.id).limit(1);
-      if (pets && pets.length > 0) setPetData(pets[0]);
+      if (pets && pets.length > 0) {
+        const decayed = applyDecay(pets[0]);
+        if (decayed._decayed) await syncPetStats(pets[0].id, decayed);
+        setPetData(decayed);
+      }
       else { router.push("/"); return; }
 
       const { data: invData } = await supabase.from("inventory")
@@ -274,7 +279,7 @@ export default function BathRoom() {
 
         <div onDragOver={(e) => e.preventDefault()} onDrop={handleDropToPet} className="relative flex flex-col items-center justify-center w-64 h-64 mb-12">
             <div className={`transition-all duration-300 ${activeAnim === "shower" ? 'scale-110' : ''}`}>
-                <PetCharacter petData={petData} petMood={activeAnim === "shower" ? "excited" : "happy"} isSleeping={petData.is_sleeping} />
+                <PetCharacter petData={petData} petMood={activeAnim === "shower" ? "excited" : getPetMood(petData)} isSleeping={petData.is_sleeping} />
             </div>
 
             {/* FUNGSI RENDER EFEK SABUN DIPANGGIL DI SINI */}

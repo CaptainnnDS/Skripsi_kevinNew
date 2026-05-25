@@ -7,6 +7,7 @@ import NavigationBar from "@/components/game/NavigationBar";
 import { BookOpen, ChevronRight, Lock, CheckCircle2 } from "lucide-react";
 import { PASS_THRESHOLD } from "@/lib/quiz";
 import { Fredoka } from "next/font/google";
+import { applyDecay, syncPetStats, canAccessLearning, ENERGY_THRESHOLD } from "@/lib/pet-stats";
 
 const funFont = Fredoka({ subsets: ["latin"], weight: ["600", "700"] });
 
@@ -26,6 +27,7 @@ export default function Learn() {
   const [materiList, setMateriList] = useState<Materi[]>([]);
   const [progressMap, setProgressMap] = useState<Record<number, boolean>>({});
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [energyBlocked, setEnergyBlocked] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -47,7 +49,12 @@ export default function Learn() {
       }
 
       if (pets && pets.length > 0) {
-        setPetData(pets[0]);
+        const decayed = applyDecay(pets[0]);
+        if (decayed._decayed) await syncPetStats(pets[0].id, decayed);
+        setPetData(decayed);
+        if (!canAccessLearning(decayed)) {
+          setEnergyBlocked(true);
+        }
       } else {
         router.push("/");
         return;
@@ -236,6 +243,25 @@ export default function Learn() {
       </div>
 
       <NavigationBar />
+
+      {/* Energy Gate Overlay */}
+      {energyBlocked && (
+        <div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-6 backdrop-blur-sm">
+          <div className={`bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl ${funFont.className}`}>
+            <span className="text-6xl mb-4 block">⚡</span>
+            <h2 className="text-2xl font-extrabold text-gray-800 mb-2">Energy Terlalu Rendah!</h2>
+            <p className="text-gray-500 font-semibold mb-2">Pet kamu butuh energy minimal {ENERGY_THRESHOLD}% untuk belajar.</p>
+            <div className="w-full bg-gray-200 rounded-full h-4 mb-6 overflow-hidden">
+              <div className="h-full bg-red-400 rounded-full transition-all" style={{ width: `${petData?.energy || 0}%` }} />
+            </div>
+            <p className="text-sm text-gray-400 font-medium mb-6">Beri makan di Kitchen atau istirahatkan di Bedroom!</p>
+            <div className="flex gap-3">
+              <button onClick={() => router.push("/kitchen")} className="flex-1 py-3 rounded-xl bg-orange-400 text-white font-extrabold hover:bg-orange-500 transition-colors">🍳 Kitchen</button>
+              <button onClick={() => router.push("/bedroom")} className="flex-1 py-3 rounded-xl bg-indigo-400 text-white font-extrabold hover:bg-indigo-500 transition-colors">🛏️ Bedroom</button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
