@@ -2,6 +2,7 @@
 import { Home, BookOpen, PenSquare, Trophy, Store } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useRef, useEffect, useState, useCallback } from "react";
+import { supabase } from "@/lib/supabase";
 
 const navItems = [
   { path: "/", icon: Home, label: "Home" },
@@ -10,6 +11,8 @@ const navItems = [
   { path: "/leaderboard", icon: Trophy, label: "Rank" },
   { path: "/shop", icon: Store, label: "Shop" },
 ];
+
+const SLEEP_BLOCKED = new Set(["/learn", "/quiz"]);
 
 function isActive(pathname: string, itemPath: string): boolean {
   if (itemPath === "/") return pathname === "/";
@@ -24,6 +27,15 @@ export default function NavigationBar() {
   const glareRef = useRef<HTMLDivElement>(null);
   const [pillStyle, setPillStyle] = useState({ x: 0, width: 0 });
   const [ready, setReady] = useState(false);
+  const [isSleeping, setIsSleeping] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) return;
+      supabase.from("pets").select("is_sleeping").eq("user_id", session.user.id).limit(1).single()
+        .then(({ data }) => { if (data) setIsSleeping(data.is_sleeping); });
+    });
+  }, [pathname]);
 
   const activeIndex = navItems.findIndex((item) => isActive(pathname, item.path));
 
@@ -112,23 +124,33 @@ export default function NavigationBar() {
         {navItems.map((item, i) => {
           const active = i === activeIndex;
           const Icon = item.icon;
+          const blocked = isSleeping && SLEEP_BLOCKED.has(item.path);
           return (
             <button
               key={item.path}
               ref={(el) => { itemsRef.current[i] = el; }}
-              onClick={() => router.push(item.path)}
+              onClick={() => {
+                if (blocked) {
+                  alert("💤 Pet lagi tidur! Bangunin dulu di Bedroom.");
+                  return;
+                }
+                router.push(item.path);
+              }}
               className="relative z-[2] flex items-center justify-center gap-[6px] h-[42px] rounded-[99px] border-none bg-transparent cursor-pointer transition-colors duration-300 active:scale-[0.92]"
               style={{ padding: active ? "0 18px" : "0 14px" }}
             >
               <Icon
                 size={20}
-                className={`transition-colors duration-300 ${active ? "text-gray-900" : "text-gray-900/40"}`}
+                className={`transition-colors duration-300 ${active ? "text-gray-900" : blocked ? "text-gray-900/25" : "text-gray-900/40"}`}
                 strokeWidth={active ? 2.4 : 2}
               />
               {active && (
                 <span className="text-[13px] font-semibold text-gray-900 whitespace-nowrap">
                   {item.label}
                 </span>
+              )}
+              {blocked && !active && (
+                <span className="absolute -top-1 -right-1 text-[10px] leading-none">💤</span>
               )}
             </button>
           );

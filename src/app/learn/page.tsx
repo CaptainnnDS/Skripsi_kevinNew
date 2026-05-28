@@ -28,6 +28,7 @@ export default function Learn() {
   const [progressMap, setProgressMap] = useState<Record<number, boolean>>({});
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [energyBlocked, setEnergyBlocked] = useState(false);
+  const [sleepBlocked, setSleepBlocked] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -52,7 +53,9 @@ export default function Learn() {
         const decayed = applyDecay(pets[0]);
         if (decayed._decayed) await syncPetStats(pets[0].id, decayed);
         setPetData(decayed);
-        if (!canAccessLearning(decayed)) {
+        if (decayed.is_sleeping) {
+          setSleepBlocked(true);
+        } else if (!canAccessLearning(decayed)) {
           setEnergyBlocked(true);
         }
       } else {
@@ -243,6 +246,18 @@ export default function Learn() {
       </div>
 
       <NavigationBar />
+
+      {/* Sleep Gate Overlay */}
+      {sleepBlocked && (
+        <div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-6 backdrop-blur-sm">
+          <div className={`bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl ${funFont.className}`}>
+            <span className="text-6xl mb-4 block">💤</span>
+            <h2 className="text-2xl font-extrabold text-gray-800 mb-2">Pet Lagi Tidur!</h2>
+            <p className="text-gray-500 font-semibold mb-6">Bangunin pet dulu di Bedroom sebelum belajar.</p>
+            <button onClick={() => router.push("/bedroom")} className="w-full py-3 rounded-xl bg-indigo-400 text-white font-extrabold hover:bg-indigo-500 transition-colors">🛏️ Ke Bedroom</button>
+          </div>
+        </div>
+      )}
 
       {/* Energy Gate Overlay */}
       {energyBlocked && (

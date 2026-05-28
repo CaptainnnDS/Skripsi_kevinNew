@@ -100,6 +100,11 @@ export default function QuizPage() {
       setPetData(decayed);
 
       // Energy gate check
+      if (decayed.is_sleeping) {
+        setError("__SLEEPING__");
+        setIsLoading(false);
+        return;
+      }
       if (!canAccessLearning(decayed)) {
         setError(`Energy terlalu rendah (${decayed.energy}%)! Minimal ${ENERGY_THRESHOLD}% untuk quiz. Beri makan di Kitchen atau istirahatkan di Bedroom.`);
         setIsLoading(false);
@@ -294,6 +299,22 @@ export default function QuizPage() {
 
   // Error state
   if (error) {
+    if (error === "__SLEEPING__") {
+      return (
+        <main className="flex min-h-screen flex-col bg-blue-50 text-gray-900 pb-24 relative overflow-hidden">
+          <TopBar pet={petData} />
+          <div className="flex-1 flex flex-col items-center justify-center px-16 py-4 relative z-10">
+            <div className="bg-white p-8 rounded-2xl shadow-md border-2 border-indigo-100 text-center max-w-md w-full">
+              <span className="text-5xl block mb-3">💤</span>
+              <h2 className="text-xl font-extrabold text-gray-800 mb-2">Pet Lagi Tidur!</h2>
+              <p className="text-gray-500 font-semibold mb-4">Bangunin pet dulu di Bedroom sebelum quiz.</p>
+              <button onClick={() => router.push("/bedroom")} className="w-full py-3 rounded-xl bg-indigo-400 text-white font-extrabold hover:bg-indigo-500 transition-colors">🛏️ Ke Bedroom</button>
+            </div>
+          </div>
+          <NavigationBar />
+        </main>
+      );
+    }
     return (
       <main className="flex min-h-screen flex-col bg-blue-50 text-gray-900 pb-24 relative overflow-hidden">
         <TopBar pet={petData} />
