@@ -1,19 +1,19 @@
 "use client";
 import { useState, useRef } from "react";
-import { Eye, EyeOff, ArrowRight, Code2, Gamepad2, BrainCircuit } from "lucide-react";
-import { motion } from "framer-motion";
+import { Eye, EyeOff, ArrowRight, Sparkles, BookOpen, Trophy } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase"; // <-- IMPORT JEMBATAN SUPABASE
+import Image from "next/image";
+import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [username, setUsername] = useState(""); // <-- Nambah state Username
+  const [username, setUsername] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-
   const authSectionRef = useRef<HTMLDivElement>(null);
 
   const scrollToAuth = (loginState: boolean) => {
@@ -21,164 +21,203 @@ export default function LoginPage() {
     authSectionRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // MESIN UTAMA BUAT LOGIN & REGISTER KE SUPABASE
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     if (!isLogin) {
-      // 1. PROSES REGISTER (SIGN UP)
-      const { data, error } = await supabase.auth.signUp({
-        email: email,
-        password: password,
-        options: {
-          data: {
-            username: username, // Simpen username ke database
-          }
-        }
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { username } },
       });
-
       if (error) {
         alert("Gagal daftar: " + error.message);
       } else {
-        alert("Berhasil daftar! Silakan cek email lo (kalau butuh verifikasi) atau langsung login.");
-        setIsLogin(true); // Pindah otomatis ke tab login
+        alert("Berhasil daftar! Silakan login.");
+        setIsLogin(true);
       }
     } else {
-      // 2. PROSES LOGIN (SIGN IN)
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
-      });
-
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         alert("Gagal login: " + error.message);
       } else {
-        alert("Login Sukses! Welcome back, Bray!");
-        router.push("/"); // Lempar ke halaman Home si Gibbey
+        router.push("/");
       }
     }
-    
+
     setLoading(false);
   };
 
+  const features = [
+    { icon: BookOpen, color: "from-green-400 to-emerald-500", label: "Belajar Coding", desc: "Kuasai pemrograman lewat materi interaktif yang seru!" },
+    { icon: Sparkles, color: "from-amber-400 to-orange-400", label: "Rawat Petmu", desc: "Jaga pet digitalmu tetap happy, sehat, dan berkembang." },
+    { icon: Trophy, color: "from-purple-400 to-pink-400", label: "Naik Level", desc: "Kumpulkan XP, raih badge, dan panjat leaderboard!" },
+  ];
+
   return (
-    <main className="bg-[#0b1120] text-slate-300 font-mono relative overflow-hidden">
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:40px_40px] z-0 pointer-events-none"></div>
+    <main className="relative overflow-hidden">
+      {/* Shared background */}
+      <div className="fixed inset-0 z-0">
+        <Image src="/bg/living room 2.png" alt="" fill className="object-cover" priority />
+        <div className="absolute inset-0 bg-green-950/55" />
+      </div>
 
-      {/* SECTION 1: HERO & ABOUT */}
-      <section className="min-h-screen flex items-center relative z-10">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 w-full flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-0 py-20">
-          
-          {/* KIRI */}
-          <div className="w-full lg:w-1/2">
-            <p className="text-gray-400 mb-4 tracking-wider">Hello, I'm Gibbey</p>
-            <h1 className="text-6xl md:text-7xl font-bold mb-6 tracking-tight leading-tight">
-              <span className="text-[#c084fc]">const</span>{" "}
-              <span className="text-[#67e8f9]">=</span> <br />
-              <span className="text-white">User</span>{" "}
-              <span className="text-[#c084fc]">;</span>
+      {/* ── SECTION 1: HERO ── */}
+      <section className="relative z-10 min-h-screen flex items-center">
+        <div className="max-w-6xl mx-auto px-6 md:px-12 w-full flex flex-col lg:flex-row items-center justify-between gap-12 py-20">
+
+          {/* Kiri — copy */}
+          <div className="w-full lg:w-1/2 text-white">
+            {/* Floating pet */}
+            <motion.div
+              animate={{ y: [0, -12, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className="text-6xl mb-6 select-none"
+            >
+              🐾
+            </motion.div>
+
+            <h1 className="text-5xl md:text-6xl font-bold leading-tight mb-4 drop-shadow-lg">
+              Selamat Datang di<br />
+              <span className="text-green-300">Dunia Gibbey!</span>
             </h1>
-            <p className="text-[#a78bfa] text-xl md:text-2xl mb-6 font-semibold">
-              // Lets learning together and take care your pet!
-            </p>
-            <p className="text-[#94a3b8] mb-10 max-w-md leading-relaxed font-sans text-lg">
-              Level up your coding skills, complete quests, and evolve your digital companion in an interactive learning environment.
+            <p className="text-green-100 text-lg md:text-xl mb-10 max-w-md leading-relaxed">
+              Belajar coding sambil merawat pet virtualmu. Setiap pelajaran yang kamu selesaikan bikin Gibbey makin bahagia! 🌿
             </p>
 
-            <div className="flex gap-4">
-              <button onClick={() => scrollToAuth(true)} className="flex items-center gap-2 px-8 py-3 rounded-lg bg-gradient-to-r from-[#c084fc] to-[#67e8f9] text-white font-bold hover:scale-105 transition-transform">
-                Login <ArrowRight size={18} />
+            <div className="flex gap-4 flex-wrap">
+              <button
+                onClick={() => scrollToAuth(true)}
+                className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-green-500 hover:bg-green-400 text-white font-bold shadow-lg hover:scale-105 active:scale-95 transition-all"
+              >
+                Masuk <ArrowRight size={18} />
               </button>
-              <button onClick={() => scrollToAuth(false)} className="flex items-center gap-2 px-8 py-3 rounded-lg border-2 border-[#a78bfa] text-[#a78bfa] font-bold hover:bg-[#a78bfa]/10 transition-colors">
-                Signup {"</>"}
+              <button
+                onClick={() => scrollToAuth(false)}
+                className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold backdrop-blur-sm hover:scale-105 active:scale-95 transition-all"
+              >
+                Daftar Sekarang ✨
               </button>
             </div>
           </div>
 
-          {/* KANAN */}
-          <div className="w-full lg:w-1/2 flex justify-center relative py-12 lg:py-0">
-            <motion.div animate={{ rotate: 360 }} transition={{ duration: 40, repeat: Infinity, ease: "linear" }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] md:w-[450px] md:h-[450px] rounded-full border border-[#c084fc]/30 shadow-[0_0_80px_rgba(192,132,252,0.15)] pointer-events-none" />
-            <div className="relative z-10 w-full max-w-md bg-[#1e293b]/70 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-2xl font-sans">
-              <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-                <Gamepad2 className="text-[#67e8f9]" /> About Gibbey
-              </h2>
-              <div className="space-y-6">
-                <div className="flex gap-4 items-start">
-                  <div className="p-2 bg-[#0f172a] rounded-lg border border-slate-700 text-[#c084fc]">
-                    <Code2 size={20} />
-                  </div>
-                  <div>
-                    <h3 className="text-white font-semibold text-sm">Interactive Coding</h3>
-                    <p className="text-slate-400 text-sm mt-1">Belajar sintaks dan logika pemrograman langsung dengan studi kasus.</p>
-                  </div>
+          {/* Kanan — feature cards */}
+          <div className="w-full lg:w-5/12 flex flex-col gap-4">
+            {features.map(({ icon: Icon, color, label, desc }, i) => (
+              <motion.div
+                key={label}
+                initial={{ opacity: 0, x: 40 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.15, duration: 0.5 }}
+                className="flex items-start gap-4 p-5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white"
+              >
+                <div className={`p-3 rounded-xl bg-gradient-to-br ${color} shadow-lg shrink-0`}>
+                  <Icon size={22} className="text-white" />
                 </div>
-                <div className="flex gap-4 items-start">
-                  <div className="p-2 bg-[#0f172a] rounded-lg border border-slate-700 text-[#67e8f9]">
-                    <BrainCircuit size={20} />
-                  </div>
-                  <div>
-                    <h3 className="text-white font-semibold text-sm">AI Companion</h3>
-                    <p className="text-slate-400 text-sm mt-1">Sistem tutor cerdas (ITS) yang siap bantu ngebimbing pas lo stuck.</p>
-                  </div>
+                <div>
+                  <h3 className="font-bold text-base mb-1">{label}</h3>
+                  <p className="text-green-100 text-sm leading-relaxed">{desc}</p>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            ))}
           </div>
 
         </div>
       </section>
 
-      {/* SECTION 2: FORM LOGIN/REGISTER */}
-      <section ref={authSectionRef} className="min-h-[80vh] flex items-center justify-center relative z-10 pb-20">
-        <div className="w-full max-w-md bg-[#1e293b]/80 backdrop-blur-xl border border-[#c084fc]/20 p-8 md:p-10 rounded-2xl shadow-[0_0_50px_rgba(192,132,252,0.1)] font-sans mx-6">
-          
-          <h2 className="text-3xl font-bold text-white mb-8 text-center">
-            {isLogin ? "System Login" : "Initialize Account"}
-          </h2>
+      {/* ── SECTION 2: FORM ── */}
+      <section ref={authSectionRef} className="relative z-10 min-h-screen flex items-center justify-center pb-20 px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md bg-white/85 backdrop-blur-xl border border-green-200 rounded-3xl shadow-2xl p-8 md:p-10"
+        >
+          {/* Tab toggle */}
+          <div className="flex bg-green-100 rounded-2xl p-1 mb-8">
+            {["Masuk", "Daftar"].map((label, i) => (
+              <button
+                key={label}
+                onClick={() => setIsLogin(i === 0)}
+                className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                  isLogin === (i === 0)
+                    ? "bg-white text-green-700 shadow-sm"
+                    : "text-green-500 hover:text-green-700"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {!isLogin && (
-              <div>
-                <label className="block text-xs font-bold text-[#a78bfa] uppercase tracking-wider mb-2">Username</label>
-                <input
-                  type="text"
-                  required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-4 py-3.5 bg-[#0f172a] border border-slate-700 rounded-xl focus:outline-none focus:border-[#67e8f9] text-white placeholder-slate-500 transition-colors"
-                  placeholder="PlayerOne"
-                />
-              </div>
-            )}
+          <div className="text-center mb-6">
+            <div className="text-4xl mb-2">{isLogin ? "👋" : "🌱"}</div>
+            <h2 className="text-2xl font-bold text-green-900">
+              {isLogin ? "Halo, selamat datang kembali!" : "Buat akun barumu!"}
+            </h2>
+            <p className="text-green-600 text-sm mt-1">
+              {isLogin ? "Gibbey kangen kamu 🐾" : "Petualanganmu dimulai dari sini ✨"}
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <AnimatePresence>
+              {!isLogin && (
+                <motion.div
+                  key="username"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.25 }}
+                >
+                  <label className="block text-xs font-bold text-green-700 uppercase tracking-wider mb-1.5">
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full px-4 py-3 bg-white border border-green-200 rounded-xl focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 text-green-900 placeholder-green-300 transition-all"
+                    placeholder="PetMaster123"
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <div>
-              <label className="block text-xs font-bold text-[#a78bfa] uppercase tracking-wider mb-2">Email</label>
+              <label className="block text-xs font-bold text-green-700 uppercase tracking-wider mb-1.5">
+                Email
+              </label>
               <input
                 type="email"
-                value={email}
                 required
+                value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3.5 bg-[#0f172a] border border-slate-700 rounded-xl focus:outline-none focus:border-[#67e8f9] text-white placeholder-slate-500 transition-colors"
-                placeholder="admin@gibbey.com"
+                className="w-full px-4 py-3 bg-white border border-green-200 rounded-xl focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 text-green-900 placeholder-green-300 transition-all"
+                placeholder="kamu@email.com"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#a78bfa] uppercase tracking-wider mb-2">Password</label>
+              <label className="block text-xs font-bold text-green-700 uppercase tracking-wider mb-1.5">
+                Password
+              </label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
-                  value={password}
                   required
+                  value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3.5 bg-[#0f172a] border border-slate-700 rounded-xl focus:outline-none focus:border-[#67e8f9] text-white placeholder-slate-500 transition-colors pr-12"
+                  className="w-full px-4 py-3 bg-white border border-green-200 rounded-xl focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 text-green-900 placeholder-green-300 transition-all pr-12"
                   placeholder="••••••••"
                 />
-                <button 
+                <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#67e8f9]"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-green-400 hover:text-green-600 transition-colors"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -188,24 +227,29 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-4 mt-6 bg-gradient-to-r from-[#c084fc] to-[#a78bfa] hover:from-[#a78bfa] hover:to-[#c084fc] text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(192,132,252,0.3)] ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.02]'}`}
+              className={`w-full py-4 mt-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white font-bold rounded-2xl shadow-lg transition-all ${
+                loading ? "opacity-60 cursor-not-allowed" : "hover:scale-[1.02] active:scale-[0.98]"
+              }`}
             >
-              {loading ? "Processing..." : (isLogin ? "Execute Login();" : "Run Register();")}
+              {loading
+                ? "Sebentar ya... 🌀"
+                : isLogin
+                ? "Masuk ke Dunia Gibbey! 🚀"
+                : "Buat Akun & Mulai Petualangan! 🌱"}
             </button>
           </form>
 
-          <p className="mt-8 text-center text-sm text-slate-400">
-            {isLogin ? "Need an instance? " : "Already initialized? "}
-            <button 
-              onClick={() => scrollToAuth(!isLogin)}
-              className="text-[#67e8f9] hover:underline font-bold"
+          <p className="mt-6 text-center text-sm text-green-600">
+            {isLogin ? "Belum punya akun? " : "Sudah punya akun? "}
+            <button
+              onClick={() => setIsLogin(!isLogin)}
+              className="text-green-700 font-bold hover:underline"
             >
-              {isLogin ? "Sign Up" : "Login"}
+              {isLogin ? "Daftar sekarang" : "Masuk di sini"}
             </button>
           </p>
-        </div>
+        </motion.div>
       </section>
-
     </main>
   );
 }
