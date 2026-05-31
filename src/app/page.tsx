@@ -6,6 +6,7 @@ import TopBar from "@/components/game/TopBar";
 import PetCharacter from "@/components/game/PetCharacter"; 
 import NavigationBar from "@/components/game/NavigationBar";
 import NetworkError from "@/components/NetworkError";
+import LoadingScreen from "@/components/LoadingScreen";
 import CheckinButton from "@/components/checkin/CheckinButton";
 import LevelUpPopup from "@/components/xp/LevelUpPopup";
 import { applyDecay, getPetMood, syncPetStats } from "@/lib/pet-stats";
@@ -75,12 +76,7 @@ export default function Home() {
   }
 
   if (isAuthLoading || !petData) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-green-50 text-green-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-green-600 mb-4"></div>
-        <p className="font-bold animate-pulse">Loading...</p>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (

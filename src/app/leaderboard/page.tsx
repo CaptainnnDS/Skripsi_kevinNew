@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Trophy, RefreshCw } from "lucide-react";
 import { supabase, safeFetch } from "@/lib/supabase";
 import { getLeaderboard, LeaderboardEntry, LeaderboardData } from "@/lib/leaderboard";
+import LoadingScreen from "@/components/LoadingScreen";
 import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import LeaderboardTable from "@/components/leaderboard/LeaderboardTable";
@@ -105,14 +106,7 @@ export default function LeaderboardPage() {
   const hasNext = selectedProfileIndex !== null && leaderboardData !== null && selectedProfileIndex < leaderboardData.top10.length - 1;
   // Loading state
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-100 to-purple-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4" />
-          <p className="text-gray-600 font-medium">Memuat papan peringkat...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   // Error state

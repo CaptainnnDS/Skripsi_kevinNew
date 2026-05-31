@@ -6,6 +6,7 @@ import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import { BookOpen, ChevronRight, Lock, CheckCircle2 } from "lucide-react";
 import { PASS_THRESHOLD } from "@/lib/quiz";
+import LoadingScreen from "@/components/LoadingScreen";
 import { Fredoka } from "next/font/google";
 import { applyDecay, syncPetStats, canAccessLearning, ENERGY_THRESHOLD } from "@/lib/pet-stats";
 
@@ -155,12 +156,7 @@ export default function Learn() {
   }, [router]);
 
   if (isAuthLoading || !petData) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-blue-50 text-blue-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 mb-4"></div>
-        <p className="font-bold animate-pulse">Jalan ke ruangan...</p>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (

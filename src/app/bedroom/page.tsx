@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { supabase, safeFetch } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
+import LoadingScreen from "@/components/LoadingScreen";
+import { showWarning, showError } from "@/lib/alert";
 import PetCharacter from "@/components/game/PetCharacter"; 
 import { X, CheckCircle } from "lucide-react"; 
 import { applyDecay, getPetMood, syncPetStats } from "@/lib/pet-stats";
@@ -155,7 +157,7 @@ export default function Bedroom() {
       const { error } = await safeFetch(
         supabase.from("pets").update({ [field]: item.icon_name }).eq("id", petData.id)
       );
-      if (error) { alert("Gagal equip item. Coba lagi."); return; }
+      if (error) { showError("Gagal equip item. Coba lagi."); return; }
       setPetData({ ...petData, [field]: item.icon_name });
     }
   };
@@ -166,11 +168,11 @@ export default function Bedroom() {
     const { error } = await safeFetch(
       supabase.from("pets").update({ is_sleeping: ns, last_stat_update: new Date().toISOString() }).eq("id", petData.id)
     );
-    if (error) { alert("Gagal update status tidur. Coba lagi."); return; }
+    if (error) { showError("Gagal update status tidur. Coba lagi."); return; }
     setPetData({ ...petData, is_sleeping: ns, last_stat_update: new Date().toISOString() });
   };
 
-  if (isAuthLoading || !petData) return <div className="min-h-screen bg-[#EEF2FF]"></div>;
+  if (isAuthLoading || !petData) return <LoadingScreen />;
 
   const isLightOn = !petData.is_sleeping;
   const currentLight = lightConfig[petData.equipped_nightlight] || lightConfig.LightStandard;
@@ -213,7 +215,7 @@ export default function Bedroom() {
 
             {/* CLOSET Button */}
             <button
-              onClick={() => isLightOn ? setShowCloset(true) : alert("Nyalain lampu dulu!")}
+              onClick={() => isLightOn ? setShowCloset(true) : showWarning("Nyalain lampu dulu!")}
               className={`flex-shrink-0 flex flex-col items-center justify-center gap-0.5 w-14 h-14 rounded-xl shadow-md transition-all ${
                 isLightOn
                   ? 'bg-gradient-to-br from-indigo-400 to-purple-500 text-white hover:shadow-lg hover:scale-105 active:scale-95'

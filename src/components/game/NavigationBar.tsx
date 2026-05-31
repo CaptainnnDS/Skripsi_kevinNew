@@ -3,6 +3,7 @@ import { Home, BookOpen, PenSquare, Trophy, Store } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useRef, useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
+import { showWarning } from "@/lib/alert";
 
 const navItems = [
   { path: "/", icon: Home, label: "Home" },
@@ -131,7 +132,7 @@ export default function NavigationBar() {
               ref={(el) => { itemsRef.current[i] = el; }}
               onClick={() => {
                 if (blocked) {
-                  alert("💤 Pet lagi tidur! Bangunin dulu di Bedroom.");
+                  showWarning("💤 Pet lagi tidur! Bangunin dulu di Bedroom.");
                   return;
                 }
                 router.push(item.path);

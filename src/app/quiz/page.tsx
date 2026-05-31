@@ -6,6 +6,7 @@ import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import QuizHistory, { type QuizAttempt } from "@/components/quiz/QuizHistory";
 import { ScrollText, BookOpen } from "lucide-react";
+import LoadingScreen from "@/components/LoadingScreen";
 
 
 export default function QuizHistoryPage() {
@@ -103,12 +104,7 @@ export default function QuizHistoryPage() {
   }, [router]);
 
   if (isLoading || !petData) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-blue-50 text-blue-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 mb-4"></div>
-        <p className="font-bold animate-pulse">Jalan ke ruangan...</p>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (

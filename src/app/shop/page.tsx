@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { supabase, safeFetch } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
+import LoadingScreen from "@/components/LoadingScreen";
+import { showWarning, showError } from "@/lib/alert";
 import { Pizza, FlaskConical, Droplets, Shirt, Bed, Palette, ArrowLeft, Store, Coins, CheckCircle, Lightbulb, Image as ImageIcon } from "lucide-react"; 
 
 
@@ -118,7 +120,7 @@ export default function Shop() {
   const buyItem = async (item: any) => {
     if (!petData) return;
     const currentCoins = petData.coins || 0; 
-    if (currentCoins < item.price) { alert("Koin lo kurang, Bray!"); return; }
+    if (currentCoins < item.price) { showWarning("Koin lo kurang, Bray!"); return; }
 
     setIsBuying(true);
     const newCoins = currentCoins - item.price;
@@ -128,18 +130,18 @@ export default function Shop() {
       const { data: existingInv, error: invCheckErr } = await safeFetch<any>(
         supabase.from("inventory").select("*").eq("user_id", petData.user_id).eq("item_id", item.id).maybeSingle()
       );
-      if (invCheckErr) { alert("Gagal cek inventory. Coba lagi."); setIsBuying(false); return; }
+      if (invCheckErr) { showError("Gagal cek inventory. Coba lagi."); setIsBuying(false); return; }
 
       if (existingInv) {
         const { error: invUpErr } = await safeFetch(
           supabase.from("inventory").update({ quantity: existingInv.quantity + 1 }).eq("id", existingInv.id)
         );
-        if (invUpErr) { alert("Gagal update inventory. Coba lagi."); setIsBuying(false); return; }
+        if (invUpErr) { showError("Gagal update inventory. Coba lagi."); setIsBuying(false); return; }
       } else {
         const { error: invInsErr } = await safeFetch(
           supabase.from("inventory").insert({ user_id: petData.user_id, item_id: item.id, quantity: 1 })
         );
-        if (invInsErr) { alert("Gagal tambah item. Coba lagi."); setIsBuying(false); return; }
+        if (invInsErr) { showError("Gagal tambah item. Coba lagi."); setIsBuying(false); return; }
       }
 
       // 2. Baru potong koin (setelah item masuk)
@@ -153,7 +155,7 @@ export default function Shop() {
         } else {
           await supabase.from("inventory").delete().eq("user_id", petData.user_id).eq("item_id", item.id);
         }
-        alert("Gagal potong koin. Coba lagi.");
+        showError("Gagal potong koin. Coba lagi.");
         setIsBuying(false);
         return;
       }
@@ -162,13 +164,13 @@ export default function Shop() {
       setPopupMsg(`Berhasil beli ${item.name}! Cek Closet ya.`);
       setTimeout(() => setPopupMsg(""), 2500);
     } catch (err) {
-      alert("Terjadi kesalahan. Coba lagi.");
+      showError("Terjadi kesalahan. Coba lagi.");
     } finally {
       setIsBuying(false);
     }
   };
 
-  if (isAuthLoading || !petData) return <div className="min-h-screen bg-blue-50"></div>;
+  if (isAuthLoading || !petData) return <LoadingScreen />;
   const displayedItems = shopItems.filter(item => item.category === activeCategory);
 
   return (

@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { supabase, safeFetch } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
+import LoadingScreen from "@/components/LoadingScreen";
+import { showWarning, showError } from "@/lib/alert";
 import PetCharacter from "@/components/game/PetCharacter"; 
 import Image from "next/image";
 import { Refrigerator, ChevronLeft, ChevronRight, Store, X } from "lucide-react"; 
@@ -80,7 +82,7 @@ export default function Kitchen() {
 
     const currentStatValue = petData[item.type] || 0; 
     if (currentStatValue >= 100 && item.value > 0) {
-      alert(`Panda udah full ${item.type}-nya!`); return;
+      showWarning(`Panda udah full ${item.type}-nya!`); return;
     }
 
     const newStatValue = Math.max(0, Math.min(100, currentStatValue + item.value));
@@ -89,7 +91,7 @@ export default function Kitchen() {
     const { error: petErr } = await safeFetch(
       supabase.from("pets").update({ [item.type]: newStatValue }).eq("id", petData.id)
     );
-    if (petErr) { alert("Gagal memberi makan. Coba lagi."); return; }
+    if (petErr) { showError("Gagal memberi makan. Coba lagi."); return; }
 
     const { error: invErr } = await safeFetch(
       supabase.from("inventory").update({ quantity: item.count - 1 }).eq("id", item.inv_id)
@@ -97,7 +99,7 @@ export default function Kitchen() {
     if (invErr) {
       // Rollback pet update
       await supabase.from("pets").update({ [item.type]: currentStatValue }).eq("id", petData.id);
-      alert("Gagal update inventory. Coba lagi.");
+      showError("Gagal update inventory. Coba lagi.");
       return;
     }
 
@@ -111,7 +113,7 @@ export default function Kitchen() {
   const prevFoodLower = () => { if (activeFoodIndexLower !== null) setActiveFoodIndexLower((prev) => (prev! - 1 + inventory.length) % inventory.length); };
   const selectItemFromFridge = (globalIndex: number) => { setActiveFoodIndexLower(globalIndex); setShowFridge(false); };
 
-  if (isAuthLoading || !petData) return <div className="min-h-screen bg-orange-50"></div>;
+  if (isAuthLoading || !petData) return <LoadingScreen />;
 
   return (
     <main className="flex min-h-screen flex-col bg-orange-50 text-gray-900 pb-48 relative overflow-hidden">
@@ -146,7 +148,7 @@ export default function Kitchen() {
 
             {/* FRIDGE Button */}
             <button
-              onClick={() => petData.is_sleeping ? alert("Panda lagi tidur! Bangunin di Bedroom dulu.") : setShowFridge(true)}
+              onClick={() => petData.is_sleeping ? showWarning("Panda lagi tidur! Bangunin di Bedroom dulu.") : setShowFridge(true)}
               className={`flex-shrink-0 flex flex-col items-center justify-center gap-0.5 w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-400 to-cyan-500 text-white shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all ${petData.is_sleeping ? 'opacity-40 grayscale cursor-not-allowed pointer-events-none' : ''}`}
             >
               <Refrigerator size={20} strokeWidth={2.5} />
@@ -242,7 +244,7 @@ export default function Kitchen() {
       {petData.is_sleeping && (
         <div 
           className="fixed inset-0 bg-black/60 z-[65] cursor-not-allowed transition-opacity duration-1000"
-          onClick={() => alert("Ssst! Panda lagi tidur pulas buat ngisi energi. Nyalain lampu di Bedroom dulu gih.")}
+          onClick={() => showWarning("Ssst! Panda lagi tidur pulas buat ngisi energi. Nyalain lampu di Bedroom dulu gih.")}
         ></div>
       )}
 

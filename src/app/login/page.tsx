@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
+import { showSuccess, showError } from "@/lib/alert";
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -32,15 +33,15 @@ export default function LoginPage() {
         options: { data: { username } },
       });
       if (error) {
-        alert("Gagal daftar: " + error.message);
+        showError("Gagal daftar: " + error.message);
       } else {
-        alert("Berhasil daftar! Silakan login.");
+        showSuccess("Berhasil daftar! Silakan login.");
         setIsLogin(true);
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        alert("Gagal login: " + error.message);
+        showError("Gagal login: " + error.message);
       } else {
         router.push("/");
       }

@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { supabase, safeFetch } from "@/lib/supabase";
 import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
+import LoadingScreen from "@/components/LoadingScreen";
+import { showWarning, showError } from "@/lib/alert";
 import PetCharacter from "@/components/game/PetCharacter"; 
 import Image from "next/image";
 import { Droplets, ChevronLeft, ChevronRight, X } from "lucide-react"; 
@@ -90,8 +92,8 @@ export default function BathRoom() {
     const currentCleanliness = petData.cleanliness || 0; 
 
     if (tool === "soap") {
-      if (isSoaped) return alert("Udah disabunin, bilas pake shower dulu, Bray!");
-      if (currentCleanliness >= 100) return alert("Panda udah kinclong banget!");
+      if (isSoaped) { showWarning("Udah disabunin, bilas pake shower dulu, Bray!"); return; }
+      if (currentCleanliness >= 100) { showWarning("Panda udah kinclong banget!"); return; }
       if (activeSoapIndexLower === null || inventory.length === 0) return;
 
       const item = inventory[activeSoapIndexLower];
@@ -100,7 +102,7 @@ export default function BathRoom() {
       const { error: invErr } = await safeFetch(
         supabase.from("inventory").update({ quantity: item.count - 1 }).eq("id", item.inv_id)
       );
-      if (invErr) { alert("Gagal pakai sabun. Coba lagi."); return; }
+      if (invErr) { showError("Gagal pakai sabun. Coba lagi."); return; }
       
       const updatedInv = [...inventory];
       updatedInv[activeSoapIndexLower].count -= 1;
@@ -128,7 +130,7 @@ export default function BathRoom() {
             const { error } = await safeFetch(
               supabase.from("pets").update({ cleanliness: newCleanliness }).eq("id", petData.id)
             );
-            if (error) { alert("Gagal update kebersihan. Coba lagi."); return; }
+            if (error) { showError("Gagal update kebersihan. Coba lagi."); return; }
             setPetData({ ...petData, cleanliness: newCleanliness });
         }
       }, 1500);
@@ -222,7 +224,7 @@ export default function BathRoom() {
     );
   };
 
-  if (isAuthLoading || !petData) return <div className="min-h-screen bg-white"></div>;
+  if (isAuthLoading || !petData) return <LoadingScreen />;
 
   return (
     <main className="flex min-h-screen flex-col bg-white text-gray-900 pb-48 relative overflow-hidden">
@@ -306,7 +308,7 @@ export default function BathRoom() {
 
             {/* SOAPS Button */}
             <button
-              onClick={() => petData.is_sleeping ? alert("Lagi tidur woy!") : setShowRack(true)}
+              onClick={() => petData.is_sleeping ? showWarning("Lagi tidur woy!") : setShowRack(true)}
               className={`flex-shrink-0 flex flex-col items-center justify-center gap-0.5 w-14 h-14 rounded-xl bg-gradient-to-br from-pink-400 to-rose-500 text-white shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all ${petData.is_sleeping ? 'opacity-40 grayscale cursor-not-allowed pointer-events-none' : ''}`}
             >
               <Droplets size={20} strokeWidth={2.5} />
@@ -397,7 +399,7 @@ export default function BathRoom() {
       )}
 
       {petData.is_sleeping && (
-        <div className="fixed inset-0 bg-black/60 z-[65] cursor-not-allowed transition-opacity duration-1000" onClick={() => alert("Ssst! Panda lagi tidur pulas.")}></div>
+        <div className="fixed inset-0 bg-black/60 z-[65] cursor-not-allowed transition-opacity duration-1000" onClick={() => showWarning("Ssst! Panda lagi tidur pulas.")}></div>
       )}
 
       <NavigationBar />
