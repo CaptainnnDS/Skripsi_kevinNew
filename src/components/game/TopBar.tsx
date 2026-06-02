@@ -128,6 +128,7 @@ export default function TopBar({ pet }: { pet: any }) {
   };
 
   return (
+    <>
     <nav className="w-full bg-white/90 backdrop-blur-md px-6 py-4 flex justify-between items-center sticky top-0 z-50 shadow-sm border-b border-blue-100">
       
       {/* KIRI: Foto Profil, Notifikasi & Koin */}
@@ -289,36 +290,37 @@ export default function TopBar({ pet }: { pet: any }) {
           <Droplets size={18} /> <span>{currentPet.cleanliness}%</span>
         </div>
       </div>
-
-      {/* Check-in Popup */}
-      {showCheckin && userId && (
-        <CheckinPopup
-          userId={userId}
-          onClose={() => setShowCheckin(false)}
-          onXpGained={async () => {
-            try {
-              const xp = await getUserXp(userId);
-              setUserXp(xp);
-            } catch {}
-          }}
-        />
-      )}
-
-      {/* Edit Pet Popup */}
-      {showEditPet && userId && (
-        <PetSetupPopup
-          userId={userId}
-          mode="edit"
-          currentName={currentPet.name || ""}
-          currentColor={currentPet.body_color || "#60a5fa"}
-          currentCoins={currentPet.coins || 0}
-          onClose={() => setShowEditPet(false)}
-          onComplete={() => {
-            setShowEditPet(false);
-            window.location.reload();
-          }}
-        />
-      )}
     </nav>
+
+    {/* Check-in Popup */}
+    {showCheckin && userId && (
+      <CheckinPopup
+        userId={userId}
+        onClose={() => setShowCheckin(false)}
+        onXpGained={async () => {
+          try {
+            const xp = await getUserXp(userId);
+            setUserXp(xp);
+          } catch {}
+        }}
+      />
+    )}
+
+    {/* Edit Pet Popup */}
+    {showEditPet && userId && (
+      <PetSetupPopup
+        userId={userId}
+        mode="edit"
+        currentName={currentPet.name || ""}
+        currentColor={currentPet.body_color || "#60a5fa"}
+        currentCoins={currentPet.coins || 0}
+        onClose={() => setShowEditPet(false)}
+        onComplete={() => {
+          setShowEditPet(false);
+          window.location.reload();
+        }}
+      />
+    )}
+    </>
   );
 }
