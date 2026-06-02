@@ -274,7 +274,7 @@ export default function BathRoom() {
         .anim-aura { animation: pulseAura 4s infinite ease-in-out; position: absolute; }
       `}} />
 
-      <div className="relative z-[60]"><TopBar pet={petData} /></div>
+      <div className="relative z-[80]"><TopBar pet={petData} /></div>
       
       <div className="flex-1 flex flex-col items-center justify-center p-6 relative z-10 w-full max-w-lg mx-auto">
         {!showRack && <h1 className={`text-4xl font-extrabold text-cyan-950 mb-8 drop-shadow-sm`}>Bathroom</h1>}

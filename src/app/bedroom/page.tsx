@@ -185,7 +185,7 @@ export default function Bedroom() {
       
       <style dangerouslySetInnerHTML={{__html: `@keyframes squishSoft { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.97); } } .anim-squish { animation: squishSoft 3s infinite ease-in-out; transform-origin: bottom center; }`}} />
 
-      <div className="relative z-[60]"><TopBar pet={petData} /></div>
+      <div className="relative z-[80]"><TopBar pet={petData} /></div>
       
       <div className="flex-1 relative flex items-center justify-center">
         {isSpace && <SpaceThemeLayer isDark={!isLightOn} />}

@@ -95,7 +95,7 @@ export default function Home() {
       </div>
 
       {/* TOPBAR */}
-      <div className="relative z-[60]"><TopBar pet={petData} /></div>
+      <div className="relative z-[80]"><TopBar pet={petData} /></div>
 
       {/* KONTEN TENGAH — flex-1 agar mengisi sisa ruang antara TopBar dan NavigationBar */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 relative z-10 w-full max-w-lg mx-auto overflow-hidden">
