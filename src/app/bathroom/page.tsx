@@ -312,7 +312,7 @@ export default function BathRoom() {
               className={`flex-shrink-0 flex flex-col items-center justify-center gap-0.5 w-14 h-14 rounded-xl bg-gradient-to-br from-pink-400 to-rose-500 text-white shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all ${petData.is_sleeping ? 'opacity-40 grayscale cursor-not-allowed pointer-events-none' : ''}`}
             >
               <Droplets size={20} strokeWidth={2.5} />
-              <span className="text-[9px] font-extrabold tracking-wider leading-none">SOAPS</span>
+              <span className="text-xs font-extrabold tracking-wider leading-none">SOAPS</span>
             </button>
 
             {/* Soap Selector */}
@@ -339,13 +339,13 @@ export default function BathRoom() {
                         <ItemEmoji iconName={item.icon_name} size={28} />
                       </div>
                       <div className="flex flex-col items-start leading-tight min-w-0">
-                        <span className="text-[10px] font-bold text-cyan-700 truncate max-w-[100px]">{item.name}</span>
-                        <span className="text-[10px] font-extrabold text-cyan-900">×{item.count}</span>
+                        <span className="text-xs font-bold text-cyan-700 truncate max-w-[100px]">{item.name}</span>
+                        <span className="text-xs font-extrabold text-cyan-900">×{item.count}</span>
                       </div>
                     </>
                   );
                 })() : (
-                  <span className="text-[11px] font-bold text-gray-400 text-center">Beli sabun di Shop</span>
+                  <span className="text-sm font-bold text-gray-400 text-center">Beli sabun di Shop</span>
                 )}
               </div>
 
@@ -367,7 +367,7 @@ export default function BathRoom() {
               title="Drag untuk membilas"
             >
               <span className="text-xl transform -scale-x-100 leading-none">🚿</span>
-              <span className="text-[9px] font-extrabold tracking-wider leading-none">RINSE</span>
+              <span className="text-xs font-extrabold tracking-wider leading-none">RINSE</span>
             </div>
           </div>
         </div>

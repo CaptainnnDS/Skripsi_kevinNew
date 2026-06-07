@@ -6,7 +6,7 @@ import TopBar from "@/components/game/TopBar";
 import NavigationBar from "@/components/game/NavigationBar";
 import LoadingScreen from "@/components/LoadingScreen";
 import { showWarning, showError } from "@/lib/alert";
-import { Pizza, FlaskConical, Droplets, Shirt, Bed, Palette, ArrowLeft, Store, Coins, CheckCircle, Lightbulb, Image as ImageIcon } from "lucide-react"; 
+import { Pizza, FlaskConical, Droplets, Shirt, Bed, Palette, ArrowLeft, Store, Coins, CheckCircle, Lightbulb } from "lucide-react"; 
 
 
 const emojiMap: Record<string, string> = {
@@ -62,7 +62,7 @@ const BedAsset = ({ type, className }: { type: string, className?: string }) => 
 };
 
 const ItemDisplay = ({ iconName, category, size, className }: { iconName: string, category: string, size: number, className?: string }) => {
-  if (category === 'colors' || (category === 'wallpaper' && iconName.startsWith('#'))) {
+  if (category === 'colors') {
     return <div style={{ width: size, height: size, backgroundColor: iconName }} className={`${className} rounded-full border-4 border-gray-200 drop-shadow-md mb-2`} />;
   }
   // FIXED: Bedroom sekarang ngerender BedAsset (SVG) atau Fallback Emoji (Sofa/Cloud)
@@ -80,7 +80,6 @@ const shopCategories = [
   { id: "soaps", name: "Soaps", icon: Droplets, color: "text-cyan-500", bg: "bg-cyan-100" },
   { id: "bedroom", name: "Beds", icon: Bed, color: "text-indigo-500", bg: "bg-indigo-100" },
   { id: "nightlight", name: "Lights", icon: Lightbulb, color: "text-yellow-500", bg: "bg-yellow-100" },
-  { id: "wallpaper", name: "Themes", icon: ImageIcon, color: "text-blue-500", bg: "bg-blue-100" },
   { id: "colors", name: "Body", icon: Palette, color: "text-green-500", bg: "bg-green-100" },
 ];
 
@@ -104,7 +103,7 @@ export default function Shop() {
       const { data: items } = await supabase
         .from("items")
         .select("*")
-        .in("category", ["food", "potions", "soaps", "bedroom", "clothes", "colors", "nightlight", "wallpaper"])
+        .in("category", ["food", "potions", "soaps", "bedroom", "clothes", "colors", "nightlight"])
         .order('price', { ascending: true });
         
       if (items) {

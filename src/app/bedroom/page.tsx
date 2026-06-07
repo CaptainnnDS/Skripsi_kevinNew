@@ -11,50 +11,6 @@ import { X, CheckCircle } from "lucide-react";
 import { applyDecay, getPetMood, syncPetStats } from "@/lib/pet-stats";
 
 
-// --- KOMPONEN TEMA LUAR ANGKASA (SPACE THEME) ---
-const SpaceThemeLayer = ({ isDark }: { isDark: boolean }) => {
-  return (
-    <div className={`absolute inset-0 z-0 pointer-events-none overflow-hidden transition-all duration-1000 ${isDark ? 'brightness-[0.4] saturate-[0.8]' : ''}`}>
-      <div className="absolute inset-0 bg-[#0c0a24] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#1e1b4b] via-[#0c0a24] to-[#020617]"></div>
-      <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-900/20 rounded-full blur-[120px]"></div>
-      <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-blue-900/20 rounded-full blur-[100px]"></div>
-      {[...Array(20)].map((_, i) => (
-        <div 
-          key={i}
-          className="absolute bg-white rounded-full animate-pulse opacity-40"
-          style={{
-            width: Math.random() * 3 + 'px',
-            height: Math.random() * 3 + 'px',
-            top: Math.random() * 100 + '%',
-            left: Math.random() * 100 + '%',
-            animationDuration: Math.random() * 3 + 2 + 's',
-            animationDelay: Math.random() * 5 + 's'
-          }}
-        />
-      ))}
-      <div className="absolute text-6xl animate-ufo-move filter drop-shadow-[0_0_20px_rgba(34,211,238,0.9)] z-10">🛸</div>
-      <div className="absolute top-[-10%] left-[30%] text-3xl animate-meteor-fall">☄️</div>
-      <div className="absolute top-[-10%] left-[70%] text-2xl animate-meteor-fall" style={{ animationDelay: '3s' }}>☄️</div>
-      <style jsx global>{`
-        @keyframes ufoMove {
-          0% { transform: translate(-150px, 150px) rotate(15deg); }
-          33% { transform: translate(40vw, 80px) rotate(-10deg); }
-          66% { transform: translate(70vw, 200px) rotate(15deg); }
-          100% { transform: translate(110vw, 150px) rotate(15deg); }
-        }
-        @keyframes meteorFall {
-          0% { transform: translate(0, 0) rotate(215deg); opacity: 0; }
-          10% { opacity: 1; }
-          90% { opacity: 1; }
-          100% { transform: translate(-600px, 900px) rotate(215deg); opacity: 0; }
-        }
-        .animate-ufo-move { animation: ufoMove 18s linear infinite; }
-        .animate-meteor-fall { animation: meteorFall 8s linear infinite; }
-      `}</style>
-    </div>
-  );
-};
-
 // --- ATMOSFER LAMPU TIDUR ---
 const NightlightAtmos = ({ type }: { type: string }) => {
   if (type === 'LightMoon') {
@@ -142,7 +98,7 @@ export default function Bedroom() {
         const closetItems = invData.map((inv: any) => {
           const itemDef = Array.isArray(inv.items) ? inv.items[0] : inv.items;
           return { inv_id: inv.id, id: itemDef.id, name: itemDef.name, category: itemDef.category, icon_name: itemDef.icon_name, count: inv.quantity };
-        }).filter((item: any) => ['colors', 'bedroom', 'nightlight', 'wallpaper'].includes(item.category));
+        }).filter((item: any) => ['colors', 'bedroom', 'nightlight'].includes(item.category));
         setInventory(closetItems);
       }
       setIsAuthLoading(false);
@@ -151,7 +107,7 @@ export default function Bedroom() {
   }, [router]);
 
   const equipItem = async (item: any) => {
-    const fm: Record<string, string> = { colors: 'body_color', bedroom: 'equipped_bed', nightlight: 'equipped_nightlight', wallpaper: 'equipped_wallpaper' };
+    const fm: Record<string, string> = { colors: 'body_color', bedroom: 'equipped_bed', nightlight: 'equipped_nightlight' };
     const field = fm[item.category];
     if (field) {
       const { error } = await safeFetch(
@@ -177,18 +133,15 @@ export default function Bedroom() {
   const isLightOn = !petData.is_sleeping;
   const currentLight = lightConfig[petData.equipped_nightlight] || lightConfig.LightStandard;
   const bStyle = bedStyles[petData.equipped_bed] || { bedStyle: 'text-[240px]', bedY: 'bottom-[-20px]', petY: 'translateY(0)' };
-  const isSpace = petData.equipped_wallpaper === 'ThemeSpace';
-
   return (
     <main className={`flex min-h-screen flex-col transition-all duration-1000 relative overflow-hidden pb-48 ${isLightOn ? '' : currentLight.glow}`} 
-          style={{ backgroundColor: isLightOn && !isSpace ? (petData.equipped_wallpaper?.startsWith('#') ? petData.equipped_wallpaper : '#EEF2FF') : '' }}>
+          style={{ backgroundColor: isLightOn ? '#EEF2FF' : '' }}>
       
       <style dangerouslySetInnerHTML={{__html: `@keyframes squishSoft { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.97); } } .anim-squish { animation: squishSoft 3s infinite ease-in-out; transform-origin: bottom center; }`}} />
 
       <div className="relative z-[80]"><TopBar pet={petData} /></div>
       
       <div className="flex-1 relative flex items-center justify-center">
-        {isSpace && <SpaceThemeLayer isDark={!isLightOn} />}
         <div className="relative z-10 flex flex-col items-center justify-center">
           <h1 className={`text-4xl font-extrabold mb-12 drop-shadow-sm transition-all duration-1000 ${isLightOn ? 'text-indigo-950' : 'text-white opacity-20'}`}>Bedroom</h1>
           <div className="relative w-80 h-80 flex items-center justify-center">
@@ -224,7 +177,7 @@ export default function Bedroom() {
               disabled={!isLightOn}
             >
               <span className="text-xl leading-none">🚪</span>
-              <span className="text-[9px] font-extrabold tracking-wider leading-none">CLOSET</span>
+              <span className="text-xs font-extrabold tracking-wider leading-none">CLOSET</span>
             </button>
 
             {/* Status / Info Center */}
@@ -233,12 +186,12 @@ export default function Bedroom() {
                 ? 'bg-yellow-50 border-yellow-100'
                 : 'bg-slate-800/60 border-slate-700'
             }`}>
-              <span className={`text-[10px] font-extrabold tracking-widest leading-none mb-1 ${
+              <span className={`text-xs font-extrabold tracking-widest leading-none mb-1 ${
                 isLightOn ? 'text-yellow-600' : 'text-blue-300'
               }`}>
                 {isLightOn ? '☀️ AWAKE' : '🌙 SLEEPING'}
               </span>
-              <span className={`text-[10px] font-medium leading-none ${
+              <span className={`text-xs font-medium leading-none ${
                 isLightOn ? 'text-gray-600' : 'text-slate-400'
               }`}>
                 {petData.is_sleeping ? 'Lampu off untuk istirahat' : 'Tap tombol untuk tidur'}
@@ -258,7 +211,7 @@ export default function Bedroom() {
               <span className={`text-2xl leading-none transition-transform ${!isLightOn ? 'brightness-110' : ''}`}>
                 {currentLight.btnIcon}
               </span>
-              <span className={`text-[9px] font-extrabold tracking-wider mt-0.5 leading-none ${
+              <span className={`text-xs font-extrabold tracking-wider mt-0.5 leading-none ${
                 isLightOn ? 'text-amber-900' : 'text-blue-300'
               }`}>
                 {isLightOn ? 'ON' : 'OFF'}
@@ -272,18 +225,17 @@ export default function Bedroom() {
         <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-6 backdrop-blur-md">
           <div className={`bg-white p-8 rounded-[3.5rem] shadow-2xl w-full max-w-md flex flex-col h-[80vh] relative border-[6px] border-blue-50`}>
             <div className="flex justify-between items-center mb-8"><div className="flex items-center gap-3"><span className="text-3xl">🚪</span><h1 className="text-3xl font-extrabold text-[#2D3663]">My Closet</h1></div><button onClick={() => setShowCloset(false)} className="w-12 h-12 flex items-center justify-center bg-gray-50 rounded-full text-gray-400 hover:bg-red-50 transition-all"><X size={28}/></button></div>
-            <div className="flex gap-1 mb-8 bg-[#F0F4FF] p-1.5 rounded-[2rem] border-2 border-white">{[ {key:'colors', l:'Warna'}, {key:'bedroom', l:'Kasur'}, {key:'nightlight', l:'Lampu'}, {key:'wallpaper', l:'Tema'} ].map(cat => (<button key={cat.key} onClick={() => setClosetCategory(cat.key)} className={`flex-1 py-3 rounded-full font-bold text-[10px] uppercase transition-all ${closetCategory === cat.key ? 'bg-white shadow-xl text-blue-600' : 'text-[#B0B8D1]'}`}>{cat.l}</button>))}</div>
+            <div className="flex gap-1 mb-8 bg-[#F0F4FF] p-1.5 rounded-[2rem] border-2 border-white">{[ {key:'colors', l:'Warna'}, {key:'bedroom', l:'Kasur'}, {key:'nightlight', l:'Lampu'} ].map(cat => (<button key={cat.key} onClick={() => setClosetCategory(cat.key)} className={`flex-1 py-3 rounded-full font-bold text-[10px] uppercase transition-all ${closetCategory === cat.key ? 'bg-white shadow-xl text-blue-600' : 'text-[#B0B8D1]'}`}>{cat.l}</button>))}</div>
             <div className="flex-1 overflow-y-auto grid grid-cols-2 gap-4 pr-2 custom-scrollbar">
               {inventory.filter(i => i.category === closetCategory).map(item => (
                 <button key={item.id} onClick={() => equipItem(item)} className="p-6 rounded-[2.5rem] border-2 border-[#F1F4FF] bg-white hover:border-blue-300 transition-all flex flex-col items-center group relative">
                   <div className="text-4xl mb-4 h-16 flex items-center justify-center">
                     {item.category === 'colors' ? (<div style={{ backgroundColor: item.icon_name }} className="w-14 h-14 rounded-full border-4 border-white shadow-lg" />) : 
-                     item.category === 'wallpaper' ? (<div className="w-14 h-14 rounded-2xl border-4 border-white shadow-lg flex items-center justify-center text-xl bg-indigo-950">🌌</div>) : 
                      item.category === 'nightlight' ? (<span className="text-5xl">{lightConfig[item.icon_name]?.btnIcon || '💡'}</span>) : 
                      (<BedAsset type={item.icon_name} className="w-12 h-12" />)}
                   </div>
                   <span className="text-[10px] font-black text-[#4A5578] text-center">{item.name}</span>
-                  {((item.category === 'colors' && item.icon_name === petData.body_color) || (item.category === 'bedroom' && item.icon_name === petData.equipped_bed) || (item.category === 'nightlight' && item.icon_name === petData.equipped_nightlight) || (item.category === 'wallpaper' && item.icon_name === petData.equipped_wallpaper)) && (<div className="absolute top-4 right-4 w-7 h-7 bg-[#34D399] rounded-full flex items-center justify-center border-4 border-white"><CheckCircle className="text-white" size={16} strokeWidth={4} /></div>)}
+                  {((item.category === 'colors' && item.icon_name === petData.body_color) || (item.category === 'bedroom' && item.icon_name === petData.equipped_bed) || (item.category === 'nightlight' && item.icon_name === petData.equipped_nightlight)) && (<div className="absolute top-4 right-4 w-7 h-7 bg-[#34D399] rounded-full flex items-center justify-center border-4 border-white"><CheckCircle className="text-white" size={16} strokeWidth={4} /></div>)}
                 </button>
               ))}
             </div>

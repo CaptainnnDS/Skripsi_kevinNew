@@ -10,7 +10,6 @@ export interface LeaderboardEntry {
   bodyColor: string;
   equippedBed: string | null;
   equippedNightlight: string | null;
-  equippedWallpaper: string | null;
   level: number;
 }
 
@@ -27,7 +26,7 @@ export async function getLeaderboard(userId: string): Promise<LeaderboardData> {
   const { data: pets, error } = await safeFetch(
     supabase
       .from("pets")
-      .select("user_id, name, total_coins_earned, coins, body_color, equipped_bed, equipped_nightlight, equipped_wallpaper")
+      .select("user_id, name, total_coins_earned, coins, body_color, equipped_bed, equipped_nightlight")
       .order("total_coins_earned", { ascending: false })
   );
 
@@ -64,7 +63,6 @@ export async function getLeaderboard(userId: string): Promise<LeaderboardData> {
     bodyColor: pet.body_color || "#60a5fa",
     equippedBed: pet.equipped_bed,
     equippedNightlight: pet.equipped_nightlight,
-    equippedWallpaper: pet.equipped_wallpaper,
     level: xpMap.get(pet.user_id) || 1,
   }));
 

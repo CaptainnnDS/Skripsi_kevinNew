@@ -187,9 +187,6 @@ export default function ProfilePopup({
             <span className="bg-white px-3 py-1.5 rounded-lg border-2 border-purple-200 text-sm font-medium text-gray-700">
               🌙 {entry.equippedNightlight || "Default"}
             </span>
-            <span className="bg-white px-3 py-1.5 rounded-lg border-2 border-purple-200 text-sm font-medium text-gray-700">
-              🌌 {entry.equippedWallpaper || "Default"}
-            </span>
           </div>
         </div>
 
