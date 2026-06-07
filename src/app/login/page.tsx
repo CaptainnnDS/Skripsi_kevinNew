@@ -81,10 +81,10 @@ export default function LoginPage() {
 
             <h1 className="text-5xl md:text-6xl font-bold leading-tight mb-4 drop-shadow-lg">
               Selamat Datang di<br />
-              <span className="text-green-300">Dunia Gibbey!</span>
+              <span className="text-green-300">CodiPet!</span>
             </h1>
             <p className="text-green-100 text-lg md:text-xl mb-10 max-w-md leading-relaxed">
-              Belajar coding sambil merawat pet virtualmu. Setiap pelajaran yang kamu selesaikan bikin Gibbey makin bahagia! 🌿
+              Belajar coding sambil merawat Gibbey atau pet virtualmu. Setiap pelajaran yang kamu selesaikan bikin Gibbey makin bahagia! 🌿
             </p>
 
             <div className="flex gap-4 flex-wrap">
@@ -235,7 +235,7 @@ export default function LoginPage() {
               {loading
                 ? "Sebentar ya... 🌀"
                 : isLogin
-                ? "Masuk ke Dunia Gibbey! 🚀"
+                ? "Masuk ke CodiPet! 🚀"
                 : "Buat Akun & Mulai Petualangan! 🌱"}
             </button>
           </form>
