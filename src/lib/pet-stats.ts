@@ -36,7 +36,6 @@ export function applyDecay(pet: any): any {
   return {
     ...pet,
     hunger: Math.max(0, Math.round((pet.hunger || 0) - decay)),
-    happiness: Math.max(0, Math.round((pet.happiness || 0) - decay)),
     energy: Math.round(energy),
     cleanliness: Math.max(0, Math.round((pet.cleanliness || 0) - decay)),
     last_stat_update: now.toISOString(),
@@ -48,7 +47,7 @@ export function applyDecay(pet: any): any {
  * Hitung mood pet berdasarkan rata-rata stat.
  */
 export function getPetMood(pet: any): PetMood {
-  const avg = ((pet.hunger || 0) + (pet.happiness || 0) + (pet.energy || 0) + (pet.cleanliness || 0)) / 4;
+  const avg = ((pet.hunger || 0) + (pet.energy || 0) + (pet.cleanliness || 0)) / 3;
   if (avg >= 70) return "happy";
   if (avg >= 40) return "neutral";
   return "sad";
@@ -69,7 +68,6 @@ export async function syncPetStats(petId: string, decayedPet: any): Promise<bool
   try {
     const { error } = await supabase.from("pets").update({
       hunger: decayedPet.hunger,
-      happiness: decayedPet.happiness,
       energy: decayedPet.energy,
       cleanliness: decayedPet.cleanliness,
       last_stat_update: decayedPet.last_stat_update,

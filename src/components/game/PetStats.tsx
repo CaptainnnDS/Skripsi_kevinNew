@@ -1,11 +1,11 @@
 "use client";
 import { motion } from "framer-motion";
-import { Heart, Zap, Droplets, UtensilsCrossed } from "lucide-react";
+import { Zap, Droplets, UtensilsCrossed } from "lucide-react";
 
 
 const stats = [
   { key: "hunger" as const, label: "Hunger", icon: UtensilsCrossed, color: "bg-orange-500" },
-  { key: "happiness" as const, label: "Happiness", icon: Heart, color: "bg-pink-500" },
+
   { key: "energy" as const, label: "Energy", icon: Zap, color: "bg-yellow-400" },
   { key: "cleanliness" as const, label: "Clean", icon: Droplets, color: "bg-blue-400" },
 ];

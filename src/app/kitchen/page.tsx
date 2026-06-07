@@ -151,8 +151,7 @@ export default function Kitchen() {
               onClick={() => petData.is_sleeping ? showWarning("Panda lagi tidur! Bangunin di Bedroom dulu.") : setShowFridge(true)}
               className={`flex-shrink-0 flex flex-col items-center justify-center gap-0.5 w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-400 to-cyan-500 text-white shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all ${petData.is_sleeping ? 'opacity-40 grayscale cursor-not-allowed pointer-events-none' : ''}`}
             >
-              <Refrigerator size={20} strokeWidth={2.5} />
-              <span className="text-[9px] font-extrabold tracking-wider leading-none">FRIDGE</span>
+              <Refrigerator size={24} strokeWidth={2.5} />
             </button>
 
             {/* Food Selector */}
@@ -179,13 +178,13 @@ export default function Kitchen() {
                         <ItemEmoji iconName={item.icon_name} size={28} />
                       </div>
                       <div className="flex flex-col items-start leading-tight min-w-0">
-                        <span className="text-[10px] font-bold text-orange-700 truncate max-w-[100px]">{item.name}</span>
-                        <span className="text-[10px] font-extrabold text-orange-900">×{item.count}</span>
+                        <span className="text-xs font-bold text-orange-700 truncate max-w-[100px]">{item.name}</span>
+                        <span className="text-xs font-extrabold text-orange-900">×{item.count}</span>
                       </div>
                     </>
                   );
                 })() : (
-                  <span className="text-[11px] font-bold text-gray-400">Kosong</span>
+                  <span className="text-sm font-bold text-gray-400">Kosong</span>
                 )}
               </div>
 
@@ -201,7 +200,7 @@ export default function Kitchen() {
             {/* Hint icon: drag to feed */}
             <div className="hidden sm:flex flex-shrink-0 flex-col items-center justify-center gap-0.5 w-14 h-14 text-gray-400">
               <span className="text-xl leading-none">🐾</span>
-              <span className="text-[8px] font-bold tracking-wide leading-none text-center">DRAG ME</span>
+              <span className="text-[10px] font-bold tracking-wide leading-none text-center">DRAG ITEM</span>
             </div>
           </div>
         </div>

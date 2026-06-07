@@ -1,5 +1,5 @@
 "use client";
-import { User, Utensils, Zap, Heart, Droplets, LogOut, Bell, Check, CalendarCheck, PenLine } from "lucide-react";
+import { User, Utensils, Zap, Droplets, LogOut, Bell, Check, CalendarCheck, PenLine } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -15,7 +15,7 @@ import {
 } from "@/lib/leaderboard";
 
 export default function TopBar({ pet }: { pet: any }) {
-  const currentPet = pet || { coins: 0, hunger: 0, energy: 0, happiness: 0, cleanliness: 0 };
+  const currentPet = pet || { coins: 0, hunger: 0, energy: 0, cleanliness: 0 };
   
   // State buat ngatur Dropdown dan nyimpen Email
   const [showDropdown, setShowDropdown] = useState(false);
@@ -275,13 +275,7 @@ export default function TopBar({ pet }: { pet: any }) {
         }`}>
           <Zap size={18} /> <span>{currentPet.energy}%</span>
         </div>
-        <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold shadow-sm ${
-          currentPet.happiness < 30
-            ? 'bg-red-100 border-2 border-red-300 text-red-600 animate-pulse'
-            : 'bg-pink-50 border-2 border-pink-200 text-pink-500'
-        }`}>
-          <Heart size={18} /> <span>{currentPet.happiness}%</span>
-        </div>
+
         <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold shadow-sm ${
           currentPet.cleanliness < 30
             ? 'bg-red-100 border-2 border-red-300 text-red-600 animate-pulse'
